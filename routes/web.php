@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\ProfesorController;
 use App\Http\Controllers\DependenciaController;
 
 // -- Rutas publicas --
@@ -22,13 +23,19 @@ Route::post('/logout', [LoginController::class, 'logout']);
 
 Route::middleware(['auth'])->group(function () {
 
-    // Panel de control
+    // Administrador
     Route::get('/admin', function () {
-        return "<h1>Bienvenido Admin</h1>";
+        return view('admin.index');
     });
+
+    Route::resource('/admin/profesores', ProfesorController::class);
+
+    // Alumno
     Route::get('/usuario', function () {
         return "<h1>Perfil de Alumno</h1>";
     });
+
+    // Profesor
     Route::get('/profesor', function () {
         return "<h1>Perfil de Profesor</h1>";
     });
