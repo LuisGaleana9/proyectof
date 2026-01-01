@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Usuario;
+use Illuminate\Support\Facades\Hash;
 
 class ProfesorController extends Controller
 {
@@ -20,12 +21,17 @@ class ProfesorController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'email' => 'required|unique:usuarios,email',
+            'password' => 'required'
+        ]);
+
         Usuario::create([
             "nombre" => $request->nombre,
             "apellidos_p" => $request->apellidos_p,
             "apellidos_m" => $request->apellidos_m,
             "email" => $request->email,
-            "password" => $request->password,
+            "password" => Hash::make($request->password),
             "rol" => "profesor",
             "matricula" => $request->matricula
         ]);
@@ -46,10 +52,16 @@ class ProfesorController extends Controller
             "apellidos_p" => $request->apellidos_p,
             "apellidos_m" => $request->apellidos_m,
             "email" => $request->email,
-            "password" => $request->password,
             "rol" => "profesor",
             "matricula" => $request->matricula
         ]);
+
+        if ($request->filled('password')) {
+            $profesor->update([
+                "password" => Hash::make($request->password)
+            ]);
+        }
+
         return redirect()->route("profesores.index");
     }
 

@@ -9,7 +9,7 @@
     <input type="text" name="apellidos_m" value="{{ $profesor->apellidos_m }}">
     <input type="text" name="matricula" value="{{ $profesor->matricula }}">
     <input type="email" name="email" value="{{ $profesor->email }}">
-    <input type="password" name="password" value="{{ $profesor->password }}">
+    <input type="password" name="password" placeholder="Nueva contraseña">
 
     <button type="submit">Actualizar</button>
 </form>
