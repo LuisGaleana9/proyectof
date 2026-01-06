@@ -5,6 +5,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProfesorController;
 use App\Http\Controllers\DependenciaController;
+use App\Http\Controllers\AlumnoController;
 
 // -- Rutas publicas --
 
@@ -37,8 +38,10 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Profesor
+    // Profesor
     Route::get('/profesor', function () {
-        return "<h1>Perfil de Profesor</h1>";
+        return view('profesor.index');
     });
+    Route::resource('/profesor/alumnos', AlumnoController::class);
 
 });
