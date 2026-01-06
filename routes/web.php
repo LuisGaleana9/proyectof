@@ -29,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::resource('/admin/profesores', ProfesorController::class);
+    Route::resource('/admin/dependencias', DependenciaController::class);
 
     // Alumno
     Route::get('/usuario', function () {

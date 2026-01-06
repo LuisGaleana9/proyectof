@@ -1,20 +1,25 @@
-<h1>Profesores</h1>
+@extends('admin.layout')
 
-<a href="{{ route('profesores.create') }}">Crear profesor</a>
+@section('content')
+    <h1>Profesores</h1>
 
-<ul>
-    @foreach($profesores as $profesor)
+    <a href="{{ route('profesores.create') }}" class="btn" style="margin-bottom: 1rem;">Crear profesor</a>
 
-        <li>
-            {{ $profesor->nombre }} - {{ $profesor->email }}
+    <ul>
+        @foreach($profesores as $profesor)
+            <li>
+                <span>{{ $profesor->nombre }} {{ $profesor->apellidos_p }} - {{ $profesor->email }}</span>
 
-            <a href="{{ route('profesores.edit', $profesor) }}">Editar</a>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{{ route('profesores.edit', $profesor) }}" class="btn btn-secondary">Editar</a>
 
-            <form action="{{ route('profesores.destroy', $profesor) }}" method="POST">
-                @csrf
-                @method('DELETE')
-                <button type="submit">Eliminar</button>
-            </form>
-        </li>
-    @endforeach
-</ul>
+                    <form action="{{ route('profesores.destroy', $profesor) }}" method="POST" style="margin:0;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </div>
+            </li>
+        @endforeach
+    </ul>
+@endsection

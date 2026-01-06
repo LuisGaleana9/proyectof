@@ -22,8 +22,12 @@ class ProfesorController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'email' => 'required|unique:usuarios,email',
-            'password' => 'required'
+            'nombre' => 'required|string|max:255',
+            'apellidos_p' => 'required|string|max:255',
+            'apellidos_m' => 'nullable|string|max:255',
+            'matricula' => 'required|unique:usuarios,matricula',
+            'email' => 'required|email|unique:usuarios,email',
+            'password' => 'required|min:6'
         ]);
 
         Usuario::create([
@@ -47,6 +51,15 @@ class ProfesorController extends Controller
     public function update(Request $request, $id)
     {
         $profesor = Usuario::findOrFail($id);
+
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'apellidos_p' => 'required|string|max:255',
+            'apellidos_m' => 'nullable|string|max:255',
+            'matricula' => 'required|unique:usuarios,matricula,' . $profesor->id_usuario . ',id_usuario',
+            'email' => 'required|email|unique:usuarios,email,' . $profesor->id_usuario . ',id_usuario',
+        ]);
+
         $profesor->update([
             "nombre" => $request->nombre,
             "apellidos_p" => $request->apellidos_p,
