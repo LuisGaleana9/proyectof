@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->string('matricula')->unique();
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('rol'); // Alumno, Profesor, Admin
+            $table->enum('rol', ['Alumno', 'Profesor', 'Admin']);
             $table->timestamps();
         });
     }

@@ -8,19 +8,23 @@ use Illuminate\Support\Facades\Hash;
 
 class AlumnoController extends Controller
 {
+    // Listar todos los alumnos
     public function index()
     {
         $alumnos = Usuario::where('rol', 'alumno')->get();
         return view('profesor.alumnos.index', compact('alumnos'));
     }
 
+    // Mostrar formulario de alta
     public function create()
     {
         return view("profesor.alumnos.crear");
     }
 
+    // Guardar nuevo alumno
     public function store(Request $request)
     {
+        // Validar datos del formulario
         $request->validate([
             'nombre' => 'required|string|max:255',
             'apellidos_p' => 'required|string|max:255',
@@ -30,6 +34,7 @@ class AlumnoController extends Controller
             'password' => 'required|min:6'
         ]);
 
+        // Crear el registro en la base de datos
         Usuario::create([
             "nombre" => $request->nombre,
             "apellidos_p" => $request->apellidos_p,
@@ -42,16 +47,19 @@ class AlumnoController extends Controller
         return redirect()->route("alumnos.index");
     }
 
+    // Mostrar formulario de edición
     public function edit($id)
     {
         $alumno = Usuario::findOrFail($id);
         return view("profesor.alumnos.editar", compact("alumno"));
     }
 
+    // Actualizar datos del alumno
     public function update(Request $request, $id)
     {
         $alumno = Usuario::findOrFail($id);
 
+        // Validar los datos modificados (ignorando el ID actual para unique)
         $request->validate([
             'nombre' => 'required|string|max:255',
             'apellidos_p' => 'required|string|max:255',
@@ -60,6 +68,7 @@ class AlumnoController extends Controller
             'email' => 'required|email|unique:usuarios,email,' . $alumno->id_usuario . ',id_usuario',
         ]);
 
+        // Actualizar información básica
         $alumno->update([
             "nombre" => $request->nombre,
             "apellidos_p" => $request->apellidos_p,
@@ -69,6 +78,7 @@ class AlumnoController extends Controller
             "matricula" => $request->matricula
         ]);
 
+        // Actualizar contraseña solo si se envió una nueva
         if ($request->filled('password')) {
             $alumno->update([
                 "password" => Hash::make($request->password)
@@ -78,6 +88,7 @@ class AlumnoController extends Controller
         return redirect()->route("alumnos.index");
     }
 
+    // Eliminar alumno
     public function destroy($id)
     {
         Usuario::destroy($id);

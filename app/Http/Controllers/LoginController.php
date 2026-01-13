@@ -25,8 +25,6 @@ class LoginController extends Controller
         // Autenticacion
         if (Auth::attempt($credentials)) {
 
-            // Login satisfactorio
-            // Creo una nueva sesion 
             $request->session()->regenerate();
 
             // Verifico el rol del usuario

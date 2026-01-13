@@ -6,25 +6,23 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProfesorController;
 use App\Http\Controllers\DependenciaController;
 use App\Http\Controllers\AlumnoController;
+use App\Http\Controllers\ServicioController;
 
-// -- Rutas publicas --
-
+//Rutas publicas
 // Desde la raiz, redirige a login
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Rutas de Login
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout']);
 
 
-// -- Rutas protegidas --
-
+//Rutas protegidas
 Route::middleware(['auth'])->group(function () {
 
-    // Administrador
+    // Admin
     Route::get('/admin', function () {
         return view('admin.index');
     });
@@ -34,14 +32,14 @@ Route::middleware(['auth'])->group(function () {
 
     // Alumno
     Route::get('/usuario', function () {
-        return "<h1>Perfil de Alumno</h1>";
+        return view('alumno.index');
     });
 
-    // Profesor
     // Profesor
     Route::get('/profesor', function () {
         return view('profesor.index');
     });
     Route::resource('/profesor/alumnos', AlumnoController::class);
+    Route::resource('/profesor/servicios', ServicioController::class);
 
 });

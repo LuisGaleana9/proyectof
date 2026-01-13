@@ -17,12 +17,16 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_alumno');
             $table->foreign('id_alumno')->references('id_usuario')->on('usuarios');
 
+            $table->unsignedBigInteger('id_profesor_asesor');
+            $table->foreign('id_profesor_asesor')->references('id_usuario')->on('usuarios');
+
             $table->unsignedBigInteger('id_dependencia');
             $table->foreign('id_dependencia')->references('id_dependencia')->on('dependencias');
 
+            $table->enum('tipo_servicio', ['Regular', 'Adelantando']);
             $table->date('fecha_inicio');
             $table->date('fecha_fin')->nullable();
-            $table->string('estado'); // Activo, En pausa, Finalizado   
+            $table->enum('estado_servicio', ['Activo', 'En pausa', 'Finalizado']);
             $table->timestamps();
         });
     }

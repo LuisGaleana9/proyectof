@@ -22,6 +22,11 @@
         <nav>
             <a href="{{ route('profesores.index') }}">Profesores</a>
             <a href="{{ route('dependencias.index') }}">Dependencias</a>
+
+            <form action="{{ url('/logout') }}" method="POST" style="margin-left: auto;">
+                @csrf
+                <button type="submit" class="btn btn-danger" style="margin: 0; padding: 0.5rem 1rem;">Cerrar Sesión</button>
+            </form>
         </nav>
 
         <div class="content-wrapper">
