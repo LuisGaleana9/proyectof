@@ -47,7 +47,7 @@ class AlumnoController extends Controller
         return redirect()->route("alumnos.index");
     }
 
-    // Mostrar formulario de edición
+    // Mostrar formulario de edicion
     public function edit($id)
     {
         $alumno = Usuario::findOrFail($id);
@@ -59,7 +59,7 @@ class AlumnoController extends Controller
     {
         $alumno = Usuario::findOrFail($id);
 
-        // Validar los datos modificados (ignorando el ID actual para unique)
+        // Validar los datos modificados
         $request->validate([
             'nombre' => 'required|string|max:255',
             'apellidos_p' => 'required|string|max:255',
@@ -68,7 +68,7 @@ class AlumnoController extends Controller
             'email' => 'required|email|unique:usuarios,email,' . $alumno->id_usuario . ',id_usuario',
         ]);
 
-        // Actualizar información básica
+        // Actualizar informacion basica
         $alumno->update([
             "nombre" => $request->nombre,
             "apellidos_p" => $request->apellidos_p,
@@ -78,7 +78,7 @@ class AlumnoController extends Controller
             "matricula" => $request->matricula
         ]);
 
-        // Actualizar contraseña solo si se envió una nueva
+        // Actualizar contraseña solo si se envio una nueva
         if ($request->filled('password')) {
             $alumno->update([
                 "password" => Hash::make($request->password)

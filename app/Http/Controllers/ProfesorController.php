@@ -48,7 +48,7 @@ class ProfesorController extends Controller
         return redirect()->route("profesores.index");
     }
 
-    // Mostrar formulario de edición
+    // Mostrar formulario de edicion
     public function edit($id)
     {
         $profesor = Usuario::findOrFail($id);
@@ -60,7 +60,7 @@ class ProfesorController extends Controller
     {
         $profesor = Usuario::findOrFail($id);
 
-        // Validar los datos modificados (ignorando el propio usuario para unique)
+        // Validar los datos modificados 
         $request->validate([
             'nombre' => 'required|string|max:255',
             'apellidos_p' => 'required|string|max:255',
@@ -69,7 +69,7 @@ class ProfesorController extends Controller
             'email' => 'required|email|unique:usuarios,email,' . $profesor->id_usuario . ',id_usuario',
         ]);
 
-        // Actualizar información básica
+        // Actualizar informacion basica
         $profesor->update([
             "nombre" => $request->nombre,
             "apellidos_p" => $request->apellidos_p,
@@ -79,7 +79,7 @@ class ProfesorController extends Controller
             "matricula" => $request->matricula
         ]);
 
-        // Actualizar contraseña solo si se envió una nueva
+        // Actualizar contraseña solo si se envio una nueva
         if ($request->filled('password')) {
             $profesor->update([
                 "password" => Hash::make($request->password)

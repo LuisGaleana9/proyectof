@@ -52,7 +52,7 @@ class DependenciaController extends Controller
     {
         $dependencia = Dependencia::findOrFail($id);
 
-        // Validar datos modificados (ignorando el ID actual para unique)
+        // Validar datos modificados
         $request->validate([
             'nombre' => 'required|string|max:255|unique:dependencias,nombre,' . $id . ',id_dependencia',
             'id_profesor_responsable' => 'required|exists:usuarios,id_usuario'
