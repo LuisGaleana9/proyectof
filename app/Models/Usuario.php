@@ -18,7 +18,8 @@ class Usuario extends Authenticatable
         'email',
         'password',
         'rol',
-        'matricula'
+        'matricula',
+        'profesor_id'
     ];
 
 }

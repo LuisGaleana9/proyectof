@@ -11,7 +11,7 @@ class ProfesorController extends Controller
     // Listar todos los profesores
     public function index()
     {
-        $profesores = Usuario::where('rol', 'profesor')->get();
+        $profesores = Usuario::where('rol', 'Profesor')->get();
         return view('admin.profesores.index', compact('profesores'));
     }
 
@@ -41,7 +41,7 @@ class ProfesorController extends Controller
             "apellidos_m" => $request->apellidos_m,
             "email" => $request->email,
             "password" => Hash::make($request->password),
-            "rol" => "profesor",
+            "rol" => "Profesor",
             "matricula" => $request->matricula
         ]);
 
@@ -75,7 +75,7 @@ class ProfesorController extends Controller
             "apellidos_p" => $request->apellidos_p,
             "apellidos_m" => $request->apellidos_m,
             "email" => $request->email,
-            "rol" => "profesor",
+            "rol" => "Profesor",
             "matricula" => $request->matricula
         ]);
 

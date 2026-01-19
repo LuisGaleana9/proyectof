@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Usuario;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AlumnoController extends Controller
@@ -11,7 +12,9 @@ class AlumnoController extends Controller
     // Listar todos los alumnos
     public function index()
     {
-        $alumnos = Usuario::where('rol', 'alumno')->get();
+        $alumnos = Usuario::where('rol', 'Alumno')
+            ->where('profesor_id', Auth::id())
+            ->get();
         return view('profesor.alumnos.index', compact('alumnos'));
     }
 
@@ -41,8 +44,9 @@ class AlumnoController extends Controller
             "apellidos_m" => $request->apellidos_m,
             "email" => $request->email,
             "password" => Hash::make($request->password),
-            "rol" => "alumno",
-            "matricula" => $request->matricula
+            "rol" => "Alumno",
+            "matricula" => $request->matricula,
+            "profesor_id" => Auth::id(),
         ]);
         return redirect()->route("alumnos.index");
     }
@@ -50,14 +54,20 @@ class AlumnoController extends Controller
     // Mostrar formulario de edicion
     public function edit($id)
     {
-        $alumno = Usuario::findOrFail($id);
+        $alumno = Usuario::where('id_usuario', $id)
+            ->where('profesor_id', Auth::id())
+            ->where('rol', 'Alumno')
+            ->firstOrFail();
         return view("profesor.alumnos.editar", compact("alumno"));
     }
 
     // Actualizar datos del alumno
     public function update(Request $request, $id)
     {
-        $alumno = Usuario::findOrFail($id);
+        $alumno = Usuario::where('id_usuario', $id)
+            ->where('profesor_id', Auth::id())
+            ->where('rol', 'Alumno')
+            ->firstOrFail();
 
         // Validar los datos modificados
         $request->validate([
@@ -74,7 +84,7 @@ class AlumnoController extends Controller
             "apellidos_p" => $request->apellidos_p,
             "apellidos_m" => $request->apellidos_m,
             "email" => $request->email,
-            "rol" => "alumno",
+            "rol" => "Alumno",
             "matricula" => $request->matricula
         ]);
 
@@ -91,7 +101,11 @@ class AlumnoController extends Controller
     // Eliminar alumno
     public function destroy($id)
     {
-        Usuario::destroy($id);
+        $alumno = Usuario::where('id_usuario', $id)
+            ->where('profesor_id', Auth::id())
+            ->where('rol', 'Alumno')
+            ->firstOrFail();
+        $alumno->delete();
         return redirect()->route("alumnos.index");
     }
 }

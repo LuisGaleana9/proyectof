@@ -24,8 +24,10 @@ class ServicioController extends Controller
     // Mostrar formulario de nuevo servicio
     public function create()
     {
-        // Obtener alumnos y dependencias para el formulario
-        $alumnos = Usuario::where('rol', 'alumno')->get();
+        // Obtener solo alumnos del profesor actual
+        $alumnos = Usuario::where('rol', 'Alumno')
+            ->where('profesor_id', Auth::id())
+            ->get();
         $dependencias = Dependencia::all();
 
         return view('profesor.servicios.crear', compact('alumnos', 'dependencias'));
@@ -51,6 +53,16 @@ class ServicioController extends Controller
             return back()->withErrors(['id_alumno' => 'Este alumno ya tiene un servicio activo.']);
         }
 
+        // Validar que el alumno pertenezca al profesor autenticado
+        $alumnoValido = Usuario::where('id_usuario', $request->id_alumno)
+            ->where('rol', 'Alumno')
+            ->where('profesor_id', Auth::id())
+            ->exists();
+
+        if (!$alumnoValido) {
+            return back()->withErrors(['id_alumno' => 'Solo puedes asignar servicios a alumnos creados por ti.']);
+        }
+
         // Crear el registro del servicio
         Servicio::create([
             'id_alumno' => $request->id_alumno,
@@ -74,7 +86,9 @@ class ServicioController extends Controller
             abort(403);
         }
 
-        $alumnos = Usuario::where('rol', 'alumno')->get();
+        $alumnos = Usuario::where('rol', 'Alumno')
+            ->where('profesor_id', Auth::id())
+            ->get();
         $dependencias = Dependencia::all();
 
         return view('profesor.servicios.editar', compact('servicio', 'alumnos', 'dependencias'));
