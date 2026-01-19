@@ -13,6 +13,8 @@
                 <div style="display: flex; gap: 0.5rem;">
                     <a href="{{ route('alumnos.edit', $alumno->id_usuario) }}" class="btn btn-secondary">Editar</a>
 
+                    <a href="{{ route('profesor.alumnos.actividades.index', $alumno->id_usuario) }}" class="btn">Actividades</a>
+
                     <form action="{{ route('alumnos.destroy', $alumno->id_usuario) }}" method="POST" style="margin:0;">
                         @csrf
                         @method('DELETE')

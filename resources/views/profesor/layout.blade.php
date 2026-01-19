@@ -23,6 +23,7 @@
             <a href="{{ url('/profesor') }}">Inicio</a>
             <a href="{{ route('alumnos.index') }}">Alumnos</a>
             <a href="{{ route('servicios.index') }}">Servicios</a>
+            <a href="{{ route('profesor.actividades.index') }}">Actividades</a>
 
             <form action="{{ url('/logout') }}" method="POST" style="margin-left: auto;">
                 @csrf
