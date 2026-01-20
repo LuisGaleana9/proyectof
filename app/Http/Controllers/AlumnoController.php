@@ -88,7 +88,7 @@ class AlumnoController extends Controller
             "matricula" => $request->matricula
         ]);
 
-        // Actualizar contraseña solo si se envio una nueva
+        // Actualizar contrasena solo si se envio una nueva
         if ($request->filled('password')) {
             $alumno->update([
                 "password" => Hash::make($request->password)

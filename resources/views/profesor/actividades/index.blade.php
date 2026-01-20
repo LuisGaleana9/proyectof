@@ -1,36 +1,30 @@
-@extends('alumno.layout')
+@extends('profesor.layout')
 
 @section('content')
     <div class="actions" style="justify-content: space-between; margin-bottom: 1rem;">
         <div>
-            <h2 style="margin: 0;">Portal del Alumno</h2>
-            <p class="muted" style="margin: 0.25rem 0 0;">Facultad de Ingeniería Eléctrica · UMICH</p>
+            <h1 style="margin: 0;">Actividades asignadas</h1>
+            <p class="muted" style="margin: 0.25rem 0 0;">Lista de tareas creadas para tus alumnos.</p>
         </div>
-        <a class="btn btn-primary" href="{{ route('alumno.reporte') }}">Reporte</a>
+        <a href="{{ route('profesor.actividades.create') }}" class="btn">Asignar actividad</a>
     </div>
 
     <div class="card">
-        @if($mostrarProgreso)
-            <h3 style="margin-top: 0;">Progreso de horas</h3>
-            <p class="muted" style="margin-bottom: 0.25rem;">Servicio social (Adelantando)</p>
-            <p><strong>Acumulado:</strong> {{ $totalHoras }}h {{ $totalMinutos }}m</p>
-            <p><strong>Requisito:</strong> {{ $metaHoras }}h · <strong>Avance:</strong> {{ $porcentaje }}%</p>
-        @endif
-
         @php
             $activas = $actividades->where('estado', '!=', 'Aprobada');
             $aprobadas = $actividades->where('estado', 'Aprobada');
         @endphp
 
-        <h3 style="margin-top: 0;">Actividades asignadas</h3>
         @if($activas->isEmpty())
             <p>No hay actividades activas.</p>
         @else
+            <h3>Activas / En revisión</h3>
             <table class="table">
                 <thead>
                     <tr>
                         <th>Actividad</th>
-                        <th>Tipo</th>
+                        <th>Alumno</th>
+                        <th>Servicio</th>
                         <th>Estado</th>
                         <th>Fecha límite</th>
                         <th>Acciones</th>
@@ -40,6 +34,7 @@
                     @foreach($activas as $a)
                         <tr>
                             <td>{{ $a->actividad }}</td>
+                            <td>{{ $a->servicio->alumno->nombre ?? '—' }}</td>
                             <td>
                                 <span class="badge {{ $a->servicio->tipo_servicio === 'Adelantando' ? 'badge-info' : 'badge-success' }}">
                                     {{ $a->servicio->tipo_servicio }}
@@ -52,7 +47,14 @@
                             </td>
                             <td>{{ $a->fecha_limite }}</td>
                             <td>
-                                <a class="btn btn-secondary" href="{{ route('alumno.actividad.show', $a->id_actividad) }}">Ver</a>
+                                <div class="actions">
+                                    <a class="btn btn-secondary" href="{{ route('profesor.actividades.edit', $a->id_actividad) }}">Editar</a>
+                                    <form action="{{ route('profesor.actividades.destroy', $a->id_actividad) }}" method="POST" onsubmit="return confirm('¿Eliminar actividad?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
@@ -67,33 +69,26 @@
                 <thead>
                     <tr>
                         <th>Actividad</th>
-                        <th>Tipo</th>
+                        <th>Alumno</th>
+                        <th>Servicio</th>
+                        <th>Estado</th>
                         <th>Fecha límite</th>
-                        @if($mostrarProgreso)
-                            <th>Total horas</th>
-                        @endif
+                        <th>Total horas</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($aprobadas as $a)
                         <tr>
                             <td>{{ $a->actividad }}</td>
+                            <td>{{ $a->servicio->alumno->nombre ?? '—' }}</td>
                             <td>
                                 <span class="badge {{ $a->servicio->tipo_servicio === 'Adelantando' ? 'badge-info' : 'badge-success' }}">
                                     {{ $a->servicio->tipo_servicio }}
                                 </span>
                             </td>
+                            <td><span class="badge badge-success">Aprobada</span></td>
                             <td>{{ $a->fecha_limite }}</td>
-                            @if($mostrarProgreso)
-                                <td>
-                                    @php
-                                        $mins = $a->total_minutos_calculados ?? 0;
-                                        $h = intdiv($mins, 60);
-                                        $m = $mins % 60;
-                                    @endphp
-                                    {{ $h }}h {{ $m }}m
-                                </td>
-                            @endif
+                            <td>{{ $a->servicio->tipo_servicio === 'Adelantando' ? ($a->total_horas_calculadas ?? '—') : 'No aplica' }}</td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -16,13 +16,18 @@
     <div class="container">
 
         <header style="margin-bottom: 2rem;">
-            <h1>Panel Profesor</h1>
+            <div class="brand">
+                <div class="brand-title">Facultad de Ingeniería Eléctrica · UMICH</div>
+                <div class="brand-subtitle">Sistema de Servicio Social — Panel de Profesor</div>
+            </div>
         </header>
 
         <nav>
             <a href="{{ url('/profesor') }}">Inicio</a>
             <a href="{{ route('alumnos.index') }}">Alumnos</a>
             <a href="{{ route('servicios.index') }}">Servicios</a>
+            <a href="{{ route('profesor.actividades.index') }}">Actividades</a>
+            <a href="{{ route('profesor.revisiones') }}">Revisiones</a>
 
             <form action="{{ url('/logout') }}" method="POST" style="margin-left: auto;">
                 @csrf
@@ -31,6 +36,9 @@
         </nav>
 
         <div class="content-wrapper">
+            @if(session('status'))
+                <div class="alert alert-success">{{ session('status') }}</div>
+            @endif
             @if ($errors->any())
                 <div
                     style="background-color: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem;">
@@ -45,6 +53,8 @@
 
             @yield('content')
         </div>
+
+        <div class="footer">Universidad Michoacana de San Nicolás de Hidalgo · Facultad de Ingeniería Eléctrica</div>
 
     </div>
 

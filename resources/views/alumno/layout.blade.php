@@ -16,11 +16,15 @@
     <div class="container">
 
         <header style="margin-bottom: 2rem;">
-            <h1>Panel Alumno</h1>
+            <div class="brand">
+                <div class="brand-title">Facultad de Ingeniería Eléctrica · UMICH</div>
+                <div class="brand-subtitle">Sistema de Servicio Social — Portal del Alumno</div>
+            </div>
         </header>
 
         <nav>
             <a href="{{ url('/usuario') }}">Inicio</a>
+            <a href="{{ route('alumno.reporte') }}">Reporte</a>
 
             <form action="{{ url('/logout') }}" method="POST" style="margin-left: auto;">
                 @csrf
@@ -30,8 +34,22 @@
         </nav>
 
         <div class="content-wrapper">
+            @if(session('status'))
+                <div class="alert alert-success">{{ session('status') }}</div>
+            @endif
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul style="margin: 0; padding-left: 1rem;">
+                        @foreach ($errors->all() as $error)
+                            <li style="list-style: disc;">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             @yield('content')
         </div>
+
+        <div class="footer">Universidad Michoacana de San Nicolás de Hidalgo · Facultad de Ingeniería Eléctrica</div>
 
     </div>
 

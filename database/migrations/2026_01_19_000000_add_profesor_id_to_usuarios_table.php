@@ -11,12 +11,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('usuarios', function (Blueprint $table) {
-            // Agregar columna profesor_id para relacionar alumnos con su profesor creador
-            $table->unsignedBigInteger('profesor_id')->nullable()->after('rol');
-            $table->foreign('profesor_id')
-                ->references('id_usuario')
-                ->on('usuarios')
-                ->onDelete('set null');
+            if (!Schema::hasColumn('usuarios', 'profesor_id')) {
+                // Agregar columna profesor_id para relacionar alumnos con su profesor creador
+                $table->unsignedBigInteger('profesor_id')->nullable()->after('rol');
+                $table->foreign('profesor_id')
+                    ->references('id_usuario')
+                    ->on('usuarios')
+                    ->onDelete('set null');
+            }
         });
     }
 

@@ -9,6 +9,7 @@ class Usuario extends Authenticatable
 {
     use HasFactory;
 
+    // Usuario (alumno, profesor, admin)
     protected $table = 'usuarios';
     protected $primaryKey = 'id_usuario';
     protected $fillable = [

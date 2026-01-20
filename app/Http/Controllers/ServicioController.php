@@ -76,7 +76,7 @@ class ServicioController extends Controller
         return redirect()->route('servicios.index');
     }
 
-    // Mostrar formulario de edición
+    // Mostrar formulario de edicion
     public function edit($id)
     {
         $servicio = Servicio::findOrFail($id);

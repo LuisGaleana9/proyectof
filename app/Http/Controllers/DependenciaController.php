@@ -39,7 +39,7 @@ class DependenciaController extends Controller
         return redirect()->route('dependencias.index');
     }
 
-    // Mostrar formulario de edición
+    // Mostrar formulario de edicion
     public function edit($id)
     {
         $dependencia = Dependencia::findOrFail($id);
