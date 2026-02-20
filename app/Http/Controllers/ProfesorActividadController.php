@@ -74,7 +74,6 @@ class ProfesorActividadController extends Controller
 
         $data = [
             'id_servicio' => $servicio->id_servicio,
-            'id_alumno' => $servicio->id_alumno,
             'actividad' => $request->actividad,
             'comentarios' => $request->comentarios,
             'fecha_limite' => $request->fecha_limite,

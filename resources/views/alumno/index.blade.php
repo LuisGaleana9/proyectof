@@ -6,7 +6,6 @@
             <h2 style="margin: 0;">Portal del Alumno</h2>
             <p class="muted" style="margin: 0.25rem 0 0;">Facultad de Ingeniería Eléctrica · UMICH</p>
         </div>
-        <a class="btn btn-primary" href="{{ route('alumno.reporte') }}">Reporte</a>
     </div>
 
     <div class="card">

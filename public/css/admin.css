@@ -181,11 +181,17 @@ li:last-child {
     border: 1px solid var(--border-color);
 }
 
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
 .table th,
 .table td {
     text-align: left;
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--border-color);
+    vertical-align: top;
 }
 
 .table thead {
@@ -224,6 +230,23 @@ li:last-child {
     display: flex;
     gap: 0.5rem;
     align-items: center;
+    flex-wrap: wrap;
+}
+
+.horas-table {
+    min-width: 560px;
+    font-size: 0.85rem;
+}
+
+.actividad-col {
+    min-width: 180px;
+    max-width: 260px;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.horas-col {
+    min-width: 620px;
 }
 
 .brand {

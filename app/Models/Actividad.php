@@ -18,7 +18,6 @@ class Actividad extends Model
         'estado',
         'fecha_limite',
         'id_servicio',
-        'id_alumno',
     ];
 
     public function servicio(): BelongsTo

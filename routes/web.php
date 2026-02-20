@@ -119,5 +119,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profesor/revisiones', [ProfesorRevisionController::class, 'index'])->name('profesor.revisiones');
     Route::post('/profesor/revisiones/{id}/aprobar', [ProfesorRevisionController::class, 'aprobar'])->name('profesor.revisiones.aprobar');
     Route::post('/profesor/revisiones/{id}/rechazar', [ProfesorRevisionController::class, 'rechazar'])->name('profesor.revisiones.rechazar');
+    Route::delete('/profesor/revisiones/horas/{idHora}', [ProfesorRevisionController::class, 'rechazarHora'])->name('profesor.revisiones.horas.rechazar');
 
 });

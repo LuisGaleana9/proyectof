@@ -27,6 +27,14 @@ class AlumnoController extends Controller
     // Guardar nuevo alumno
     public function store(Request $request)
     {
+        $matricula = trim((string) $request->matricula);
+        $emailGenerado = strtolower($matricula) . '@umich.mx';
+
+        $request->merge([
+            'matricula' => $matricula,
+            'email' => $emailGenerado,
+        ]);
+
         // Validar datos del formulario
         $request->validate([
             'nombre' => 'required|string|max:255',

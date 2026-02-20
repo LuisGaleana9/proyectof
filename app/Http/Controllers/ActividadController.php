@@ -184,14 +184,7 @@ class ActividadController extends Controller
             abort(403);
         }
 
-        if ($actividad->estado !== 'En Revisión') {
-            return back()->withErrors(['Solo puedes cancelar cuando está en revisión.']);
-        }
-
-        $actividad->estado = 'Activa';
-        $actividad->save();
-
-        return back()->with('status', 'Se canceló la revisión. Puedes continuar la actividad.');
+        return back()->withErrors(['Una actividad en revisión ya no puede ser cancelada por el alumno.']);
     }
 
     // Reporte del alumno con actividades aprobadas

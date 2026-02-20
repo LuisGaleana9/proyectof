@@ -40,13 +40,7 @@
     @if($tipoServicio === 'Adelantando')
         <h4>Registro de horas</h4>
         @if($actividad->estado !== 'Activa')
-            <p class="muted">No se pueden registrar horas. Estado actual: {{ $actividad->estado }}</p>
-            @if($actividad->estado === 'En Revisión')
-                <form method="POST" action="{{ route('alumno.actividad.cancelar', $actividad->id_actividad) }}" style="margin-top: 0.5rem;">
-                    @csrf
-                    <button type="submit" class="btn btn-secondary">Cancelar revisión</button>
-                </form>
-            @endif
+            <p class="muted">Ya no se pueden registrar horas. Estado: {{ $actividad->estado }}</p>
         @else
             <div class="actions" style="margin-bottom: 1rem;">
                 @if($horaAbierta)
@@ -104,11 +98,6 @@
             <form method="POST" action="{{ route('alumno.actividad.realizada', $actividad->id_actividad) }}">
                 @csrf
                 <button type="submit" class="btn btn-success">Marcar como realizada</button>
-            </form>
-        @elseif($actividad->estado === 'En Revisión')
-            <form method="POST" action="{{ route('alumno.actividad.cancelar', $actividad->id_actividad) }}">
-                @csrf
-                <button type="submit" class="btn btn-secondary">Cancelar revisión</button>
             </form>
         @endif
     @endif
