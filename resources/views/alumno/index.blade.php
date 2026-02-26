@@ -40,8 +40,8 @@
                         <tr>
                             <td>{{ $a->actividad }}</td>
                             <td>
-                                <span class="badge {{ $a->servicio->tipo_servicio === 'Adelantando' ? 'badge-info' : 'badge-success' }}">
-                                    {{ $a->servicio->tipo_servicio }}
+                                <span class="badge {{ ($a->tipo_servicio_alumno ?? 'Regular') === 'Adelantando' ? 'badge-info' : 'badge-success' }}">
+                                    {{ $a->tipo_servicio_alumno ?? 'Regular' }}
                                 </span>
                             </td>
                             <td>
@@ -78,8 +78,8 @@
                         <tr>
                             <td>{{ $a->actividad }}</td>
                             <td>
-                                <span class="badge {{ $a->servicio->tipo_servicio === 'Adelantando' ? 'badge-info' : 'badge-success' }}">
-                                    {{ $a->servicio->tipo_servicio }}
+                                <span class="badge {{ ($a->tipo_servicio_alumno ?? 'Regular') === 'Adelantando' ? 'badge-info' : 'badge-success' }}">
+                                    {{ $a->tipo_servicio_alumno ?? 'Regular' }}
                                 </span>
                             </td>
                             <td>{{ $a->fecha_limite }}</td>

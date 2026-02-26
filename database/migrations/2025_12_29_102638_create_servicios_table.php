@@ -13,20 +13,13 @@ return new class extends Migration {
         Schema::create('servicios', function (Blueprint $table) {
             $table->id('id_servicio');
 
-            // Llaves foraneas
-            $table->unsignedBigInteger('id_alumno');
-            $table->foreign('id_alumno')->references('id_usuario')->on('usuarios');
+            $table->string('nombre');
+            $table->text('descripcion')->nullable();
 
-            $table->unsignedBigInteger('id_profesor_asesor');
-            $table->foreign('id_profesor_asesor')->references('id_usuario')->on('usuarios');
+            // Profesor dueño del servicio
+            $table->unsignedBigInteger('id_profesor');
+            $table->foreign('id_profesor')->references('id_usuario')->on('usuarios')->onDelete('cascade');
 
-            $table->unsignedBigInteger('id_dependencia');
-            $table->foreign('id_dependencia')->references('id_dependencia')->on('dependencias');
-
-            $table->enum('tipo_servicio', ['Regular', 'Adelantando']);
-            $table->date('fecha_inicio');
-            $table->date('fecha_fin')->nullable();
-            $table->enum('estado_servicio', ['Activo', 'En pausa', 'Finalizado']);
             $table->timestamps();
         });
     }

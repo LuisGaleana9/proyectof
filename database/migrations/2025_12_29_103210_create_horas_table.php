@@ -27,6 +27,13 @@ return new class extends Migration {
                 ->on('actividades')
                 ->onDelete('cascade');
 
+            // Alumno que registra las horas (necesario para actividades grupales)
+            $table->unsignedBigInteger('id_alumno_servicio')->nullable();
+            $table->foreign('id_alumno_servicio')
+                ->references('id')
+                ->on('alumno_servicio')
+                ->onDelete('cascade');
+
             $table->timestamps();
         });
     }

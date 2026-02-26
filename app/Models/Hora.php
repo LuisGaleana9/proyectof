@@ -17,11 +17,18 @@ class Hora extends Model
         'asistencia',
         'id_actividad',
         'horas_totales',
+        'id_alumno_servicio',
     ];
 
     public function actividad(): BelongsTo
     {
         // Actividad a la que pertenece el registro
         return $this->belongsTo(Actividad::class, 'id_actividad', 'id_actividad');
+    }
+
+    // Alumno que registro estas horas
+    public function alumnoServicio(): BelongsTo
+    {
+        return $this->belongsTo(AlumnoServicio::class, 'id_alumno_servicio', 'id');
     }
 }

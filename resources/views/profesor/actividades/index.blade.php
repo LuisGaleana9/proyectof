@@ -34,12 +34,8 @@
                     @foreach($activas as $a)
                         <tr>
                             <td>{{ $a->actividad }}</td>
-                            <td>{{ $a->servicio->alumno->nombre ?? '—' }}</td>
-                            <td>
-                                <span class="badge {{ $a->servicio->tipo_servicio === 'Adelantando' ? 'badge-info' : 'badge-success' }}">
-                                    {{ $a->servicio->tipo_servicio }}
-                                </span>
-                            </td>
+                            <td>{{ $a->alumnoServicio->alumno->nombre ?? '—' }}</td>
+                            <td>{{ $a->servicio->nombre ?? '—' }}</td>
                             <td>
                                 <span class="badge {{ $a->estado === 'Aprobada' ? 'badge-success' : ($a->estado === 'En Revisión' ? 'badge-warning' : 'badge-info') }}">
                                     {{ $a->estado }}
@@ -73,22 +69,16 @@
                         <th>Servicio</th>
                         <th>Estado</th>
                         <th>Fecha límite</th>
-                        <th>Total horas</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($aprobadas as $a)
                         <tr>
                             <td>{{ $a->actividad }}</td>
-                            <td>{{ $a->servicio->alumno->nombre ?? '—' }}</td>
-                            <td>
-                                <span class="badge {{ $a->servicio->tipo_servicio === 'Adelantando' ? 'badge-info' : 'badge-success' }}">
-                                    {{ $a->servicio->tipo_servicio }}
-                                </span>
-                            </td>
+                            <td>{{ $a->alumnoServicio->alumno->nombre ?? '—' }}</td>
+                            <td>{{ $a->servicio->nombre ?? '—' }}</td>
                             <td><span class="badge badge-success">Aprobada</span></td>
                             <td>{{ $a->fecha_limite }}</td>
-                            <td>{{ $a->servicio->tipo_servicio === 'Adelantando' ? ($a->total_horas_calculadas ?? '—') : 'No aplica' }}</td>
                         </tr>
                     @endforeach
                 </tbody>

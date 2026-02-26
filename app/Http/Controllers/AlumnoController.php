@@ -4,16 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Usuario;
+use App\Models\Servicio;
+use App\Models\AlumnoServicio;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AlumnoController extends Controller
 {
-    // Listar todos los alumnos
+    // Listar todos los alumnos del profesor
     public function index()
     {
         $alumnos = Usuario::where('rol', 'Alumno')
             ->where('profesor_id', Auth::id())
+            ->with('alumnoServicios.servicio')
             ->get();
         return view('profesor.alumnos.index', compact('alumnos'));
     }
@@ -21,7 +24,9 @@ class AlumnoController extends Controller
     // Mostrar formulario de alta
     public function create()
     {
-        return view("profesor.alumnos.crear");
+        // Cargar servicios del profesor para el dropdown
+        $servicios = Servicio::where('id_profesor', Auth::id())->get();
+        return view('profesor.alumnos.crear', compact('servicios'));
     }
 
     // Guardar nuevo alumno
@@ -42,21 +47,39 @@ class AlumnoController extends Controller
             'apellidos_m' => 'nullable|string|max:255',
             'matricula' => 'required|unique:usuarios,matricula',
             'email' => 'required|email|unique:usuarios,email',
-            'password' => 'required|min:6'
+            'password' => 'required|min:6',
+            'id_servicio' => 'required|exists:servicios,id_servicio',
+            'tipo_servicio' => 'required|in:Regular,Adelantando',
+            'fecha_inicio' => 'required|date',
         ]);
 
-        // Crear el registro en la base de datos
-        Usuario::create([
-            "nombre" => $request->nombre,
-            "apellidos_p" => $request->apellidos_p,
-            "apellidos_m" => $request->apellidos_m,
-            "email" => $request->email,
-            "password" => Hash::make($request->password),
-            "rol" => "Alumno",
-            "matricula" => $request->matricula,
-            "profesor_id" => Auth::id(),
+        // Verificar que el servicio pertenezca al profesor
+        $servicio = Servicio::where('id_servicio', $request->id_servicio)
+            ->where('id_profesor', Auth::id())
+            ->firstOrFail();
+
+        // Crear el alumno
+        $alumno = Usuario::create([
+            'nombre' => $request->nombre,
+            'apellidos_p' => $request->apellidos_p,
+            'apellidos_m' => $request->apellidos_m,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'rol' => 'Alumno',
+            'matricula' => $request->matricula,
+            'profesor_id' => Auth::id(),
         ]);
-        return redirect()->route("alumnos.index");
+
+        // Inscribir al alumno en el servicio
+        AlumnoServicio::create([
+            'id_alumno' => $alumno->id_usuario,
+            'id_servicio' => $servicio->id_servicio,
+            'tipo_servicio' => $request->tipo_servicio,
+            'fecha_inicio' => $request->fecha_inicio,
+            'estado_servicio' => 'Activo',
+        ]);
+
+        return redirect()->route('alumnos.index');
     }
 
     // Mostrar formulario de edicion
@@ -66,7 +89,15 @@ class AlumnoController extends Controller
             ->where('profesor_id', Auth::id())
             ->where('rol', 'Alumno')
             ->firstOrFail();
-        return view("profesor.alumnos.editar", compact("alumno"));
+
+        $servicios = Servicio::where('id_profesor', Auth::id())->get();
+
+        // Inscripcion actual del alumno
+        $inscripcion = AlumnoServicio::where('id_alumno', $alumno->id_usuario)
+            ->where('estado_servicio', 'Activo')
+            ->first();
+
+        return view('profesor.alumnos.editar', compact('alumno', 'servicios', 'inscripcion'));
     }
 
     // Actualizar datos del alumno
@@ -88,22 +119,22 @@ class AlumnoController extends Controller
 
         // Actualizar informacion basica
         $alumno->update([
-            "nombre" => $request->nombre,
-            "apellidos_p" => $request->apellidos_p,
-            "apellidos_m" => $request->apellidos_m,
-            "email" => $request->email,
-            "rol" => "Alumno",
-            "matricula" => $request->matricula
+            'nombre' => $request->nombre,
+            'apellidos_p' => $request->apellidos_p,
+            'apellidos_m' => $request->apellidos_m,
+            'email' => $request->email,
+            'rol' => 'Alumno',
+            'matricula' => $request->matricula,
         ]);
 
         // Actualizar contrasena solo si se envio una nueva
         if ($request->filled('password')) {
             $alumno->update([
-                "password" => Hash::make($request->password)
+                'password' => Hash::make($request->password)
             ]);
         }
 
-        return redirect()->route("alumnos.index");
+        return redirect()->route('alumnos.index');
     }
 
     // Eliminar alumno
@@ -114,6 +145,6 @@ class AlumnoController extends Controller
             ->where('rol', 'Alumno')
             ->firstOrFail();
         $alumno->delete();
-        return redirect()->route("alumnos.index");
+        return redirect()->route('alumnos.index');
     }
 }

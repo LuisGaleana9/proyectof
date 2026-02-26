@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Actividad;
 use App\Models\Servicio;
+use App\Models\AlumnoServicio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -32,9 +33,9 @@ class ProfesorActividadController extends Controller
     public function index()
     {
         $profesorId = Auth::id();
-        $actividades = Actividad::with(['servicio.alumno', 'horas'])
+        $actividades = Actividad::with(['servicio', 'alumnoServicio.alumno', 'horas'])
             ->whereHas('servicio', function ($q) use ($profesorId) {
-                $q->where('id_profesor_asesor', $profesorId);
+                $q->where('id_profesor', $profesorId);
             })
             ->orderBy('fecha_limite', 'desc')
             ->get();
@@ -50,12 +51,16 @@ class ProfesorActividadController extends Controller
     public function create()
     {
         $profesorId = Auth::id();
-        $servicios = Servicio::with('alumno')
-            ->where('id_profesor_asesor', $profesorId)
-            ->where('estado_servicio', 'Activo')
-            ->get();
+        $servicios = Servicio::where('id_profesor', $profesorId)->get();
 
-        return view('profesor.actividades.crear', compact('servicios'));
+        // Obtener inscripciones activas para cada servicio
+        $alumnosPorServicio = AlumnoServicio::whereIn('id_servicio', $servicios->pluck('id_servicio'))
+            ->where('estado_servicio', 'Activo')
+            ->with('alumno')
+            ->get()
+            ->groupBy('id_servicio');
+
+        return view('profesor.actividades.crear', compact('servicios', 'alumnosPorServicio'));
     }
 
     // Guardar nueva actividad
@@ -66,10 +71,11 @@ class ProfesorActividadController extends Controller
             'actividad' => 'required|string|max:500',
             'comentarios' => 'nullable|string|max:1000',
             'fecha_limite' => 'required|date',
+            'id_alumno_servicio' => 'required|exists:alumno_servicio,id',
         ]);
 
         $servicio = Servicio::where('id_servicio', $request->id_servicio)
-            ->where('id_profesor_asesor', Auth::id())
+            ->where('id_profesor', Auth::id())
             ->firstOrFail();
 
         $data = [
@@ -78,6 +84,7 @@ class ProfesorActividadController extends Controller
             'comentarios' => $request->comentarios,
             'fecha_limite' => $request->fecha_limite,
             'estado' => 'Activa',
+            'id_alumno_servicio' => $request->id_alumno_servicio,
         ];
 
         Actividad::create($data);
@@ -88,19 +95,24 @@ class ProfesorActividadController extends Controller
     // Mostrar formulario de edicion
     public function edit($id)
     {
-        $actividad = Actividad::with('servicio.alumno')->findOrFail($id);
-        if ($actividad->servicio->id_profesor_asesor != Auth::id()) {
+        $actividad = Actividad::with(['servicio', 'alumnoServicio.alumno'])->findOrFail($id);
+        if ($actividad->servicio->id_profesor != Auth::id()) {
             abort(403);
         }
 
-        return view('profesor.actividades.editar', compact('actividad'));
+        $alumnosServicio = AlumnoServicio::where('id_servicio', $actividad->id_servicio)
+            ->where('estado_servicio', 'Activo')
+            ->with('alumno')
+            ->get();
+
+        return view('profesor.actividades.editar', compact('actividad', 'alumnosServicio'));
     }
 
     // Actualizar actividad
     public function update(Request $request, $id)
     {
         $actividad = Actividad::with('servicio')->findOrFail($id);
-        if ($actividad->servicio->id_profesor_asesor != Auth::id()) {
+        if ($actividad->servicio->id_profesor != Auth::id()) {
             abort(403);
         }
 
@@ -108,12 +120,14 @@ class ProfesorActividadController extends Controller
             'actividad' => 'required|string|max:500',
             'comentarios' => 'nullable|string|max:1000',
             'fecha_limite' => 'required|date',
+            'id_alumno_servicio' => 'required|exists:alumno_servicio,id',
         ]);
 
         $actividad->update([
             'actividad' => $request->actividad,
             'comentarios' => $request->comentarios,
             'fecha_limite' => $request->fecha_limite,
+            'id_alumno_servicio' => $request->id_alumno_servicio,
         ]);
 
         return redirect()->route('profesor.actividades.index')->with('status', 'Actividad actualizada.');
@@ -123,7 +137,7 @@ class ProfesorActividadController extends Controller
     public function destroy($id)
     {
         $actividad = Actividad::with('servicio')->findOrFail($id);
-        if ($actividad->servicio->id_profesor_asesor != Auth::id()) {
+        if ($actividad->servicio->id_profesor != Auth::id()) {
             abort(403);
         }
 

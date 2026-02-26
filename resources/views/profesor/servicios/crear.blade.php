@@ -1,37 +1,22 @@
 @extends('profesor.layout')
 
 @section('content')
-    <h1>Dar de alta Servicio</h1>
+    <h1>Crear Servicio</h1>
 
     <form action="{{ route('servicios.store') }}" method="POST">
         @csrf
 
-        <label>Alumno:</label>
-        <select name="id_alumno" required>
-            <option value="">Seleccione un alumno</option>
-            @foreach($alumnos as $alumno)
-                <option value="{{ $alumno->id_usuario }}">
-                    {{ $alumno->nombre }} {{ $alumno->apellidos_p }} ({{ $alumno->matricula }})
-                </option>
-            @endforeach
-        </select>
+        <label>Nombre del servicio:</label>
+        <input type="text" name="nombre" placeholder="Ej: Servicio de Laboratorios" value="{{ old('nombre') }}" required>
+        @error('nombre')
+            <div class="muted" style="color:#b91c1c; margin-top:-0.5rem; margin-bottom:0.75rem;">{{ $message }}</div>
+        @enderror
 
-        <label>Dependencia:</label>
-        <select name="id_dependencia" required>
-            <option value="">Seleccione una dependencia</option>
-            @foreach($dependencias as $dep)
-                <option value="{{ $dep->id_dependencia }}">{{ $dep->nombre }}</option>
-            @endforeach
-        </select>
-
-        <label>Tipo de Servicio:</label>
-        <select name="tipo_servicio" required>
-            <option value="Regular">Regular</option>
-            <option value="Adelantando">Adelantando</option>
-        </select>
-
-        <label>Fecha de Inicio:</label>
-        <input type="date" name="fecha_inicio" value="{{ date('Y-m-d') }}" required>
+        <label>Descripción:</label>
+        <textarea name="descripcion" rows="3" placeholder="Describe brevemente el servicio...">{{ old('descripcion') }}</textarea>
+        @error('descripcion')
+            <div class="muted" style="color:#b91c1c; margin-top:-0.5rem; margin-bottom:0.75rem;">{{ $message }}</div>
+        @enderror
 
         <br>
         <button type="submit" class="btn">Guardar</button>

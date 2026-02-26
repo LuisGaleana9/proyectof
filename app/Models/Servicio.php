@@ -6,41 +6,31 @@ use Illuminate\Database\Eloquent\Model;
 
 class Servicio extends Model
 {
-    // Servicio social asignado al alumno
+    // Servicio social creado por el profesor
     protected $table = 'servicios';
     protected $primaryKey = 'id_servicio';
 
     protected $fillable = [
-        'id_alumno',
-        'id_profesor_asesor',
-        'id_dependencia',
-        'tipo_servicio',
-        'fecha_inicio',
-        'fecha_fin',
-        'estado_servicio'
+        'nombre',
+        'descripcion',
+        'id_profesor',
     ];
 
-    public function alumno()
+    // Profesor dueno del servicio
+    public function profesor()
     {
-        // Alumno asignado al servicio
-        return $this->belongsTo(Usuario::class, 'id_alumno', 'id_usuario');
+        return $this->belongsTo(Usuario::class, 'id_profesor', 'id_usuario');
     }
 
-    public function asesor()
+    // Inscripciones de alumnos a este servicio
+    public function alumnoServicios()
     {
-        // Profesor asesor del servicio
-        return $this->belongsTo(Usuario::class, 'id_profesor_asesor', 'id_usuario');
+        return $this->hasMany(AlumnoServicio::class, 'id_servicio', 'id_servicio');
     }
 
-    public function dependencia()
-    {
-        // Dependencia responsable
-        return $this->belongsTo(Dependencia::class, 'id_dependencia', 'id_dependencia');
-    }
-
+    // Actividades asociadas al servicio
     public function actividades()
     {
-        // Actividades asociadas al servicio
         return $this->hasMany(Actividad::class, 'id_servicio', 'id_servicio');
     }
 }

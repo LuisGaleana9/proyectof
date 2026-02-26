@@ -8,18 +8,10 @@
         @csrf
 
         <label>Nombre:</label>
-        <input type="text" name="nombre" required>
-        <br><br>
-
-        <label>Profesor Responsable:</label>
-        <select name="id_profesor_responsable" required>
-            <option value="">Seleccione un profesor</option>
-            @foreach($profesores as $profe)
-                <option value="{{ $profe->id_usuario }}">
-                    {{ $profe->nombre }} {{ $profe->apellidos_p }} {{ $profe->apellidos_m }}
-                </option>
-            @endforeach
-        </select>
+        <input type="text" name="nombre" value="{{ old('nombre') }}" required>
+        @error('nombre')
+            <div class="muted" style="color:#b91c1c; margin-top:-0.5rem; margin-bottom:0.75rem;">{{ $message }}</div>
+        @enderror
         <br><br>
 
         <button type="submit">Guardar</button>

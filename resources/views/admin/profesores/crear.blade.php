@@ -42,7 +42,50 @@
             <div class="muted" style="color:#b91c1c; margin-top:-0.5rem; margin-bottom:0.75rem;">{{ $message }}</div>
         @enderror
 
+        <label>Dependencia:</label>
+        <select name="id_dependencia" id="select_dependencia">
+            <option value="">Sin dependencia</option>
+            @foreach($dependencias as $dep)
+                <option value="{{ $dep->id_dependencia }}" {{ old('id_dependencia') == $dep->id_dependencia ? 'selected' : '' }}>
+                    {{ $dep->nombre }}
+                </option>
+            @endforeach
+        </select>
+        @error('id_dependencia')
+            <div class="muted" style="color:#b91c1c; margin-top:-0.5rem; margin-bottom:0.75rem;">{{ $message }}</div>
+        @enderror
+
+        <div style="margin-top: 0.5rem;">
+            <label>
+                <input type="checkbox" id="toggle_nueva_dep" style="width: auto; display: inline;"> Crear nueva dependencia
+            </label>
+            <input type="text" name="nueva_dependencia" id="input_nueva_dep" placeholder="Nombre de la nueva dependencia" value="{{ old('nueva_dependencia') }}" style="display: none; margin-top: 0.5rem;">
+        </div>
+        @error('nueva_dependencia')
+            <div class="muted" style="color:#b91c1c; margin-top:-0.5rem; margin-bottom:0.75rem;">{{ $message }}</div>
+        @enderror
+
         <br>
         <button type="submit">Guardar</button>
     </form>
+
+    <script>
+        (function() {
+            const toggle = document.getElementById('toggle_nueva_dep');
+            const input = document.getElementById('input_nueva_dep');
+            const select = document.getElementById('select_dependencia');
+            if (!toggle || !input || !select) return;
+
+            toggle.addEventListener('change', function() {
+                if (this.checked) {
+                    input.style.display = 'block';
+                    select.disabled = true;
+                } else {
+                    input.style.display = 'none';
+                    input.value = '';
+                    select.disabled = false;
+                }
+            });
+        })();
+    </script>
 @endsection

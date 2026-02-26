@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Actividad;
-use App\Models\Servicio;
+use App\Models\AlumnoServicio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -11,22 +11,34 @@ use Carbon\Carbon;
 
 class ActividadController extends Controller
 {
-    // Calcular minutos acumulados por actividad
-    private function calcularTotalMinutos(Actividad $actividad): int
+    // Calcular minutos acumulados por actividad (para un alumno especifico)
+    private function calcularTotalMinutos(Actividad $actividad, $alumnoServicioId = null): int
     {
-        if (Schema::hasColumn('horas', 'horas_totales')) {
-            $horas = (float) $actividad->horas->sum('horas_totales');
-            return (int) round($horas * 60);
+        $horas = $actividad->horas;
+
+        // Si se pasa un alumnoServicioId, filtrar solo las horas de ese alumno
+        if ($alumnoServicioId) {
+            $horas = $horas->where('id_alumno_servicio', $alumnoServicioId);
         }
 
-        return (int) $actividad->horas->reduce(function ($carry, $h) {
-            if ($h->hora_final) {
-                $inicio = Carbon::parse($h->hora_inicio);
-                $fin = Carbon::parse($h->hora_final);
-                $carry += $inicio->diffInMinutes($fin);
-            }
-            return $carry;
-        }, 0);
+        $total = (float) $horas->sum('horas_totales');
+        return (int) round($total * 60);
+    }
+
+    // Obtener la inscripcion activa del alumno para una actividad
+    private function getAlumnoServicio(Actividad $actividad)
+    {
+        $user = Auth::user();
+
+        $as = AlumnoServicio::where('id', $actividad->id_alumno_servicio)
+            ->where('id_alumno', $user->id_usuario)
+            ->first();
+
+        if (!$as) {
+            abort(403);
+        }
+
+        return $as;
     }
 
     // Mostrar detalle de actividad para alumno
@@ -34,17 +46,17 @@ class ActividadController extends Controller
     {
         $actividad = Actividad::with(['servicio', 'horas'])->findOrFail($id);
 
-        $user = Auth::user();
-        // Validar que la actividad pertenezca al alumno
-        if ($actividad->servicio->id_alumno !== $user->id_usuario) {
-            abort(403);
-        }
+        $alumnoServicio = $this->getAlumnoServicio($actividad);
 
-        $tipoServicio = $actividad->servicio->tipo_servicio;
-        $horaAbierta = $actividad->horas()->whereNull('hora_final')->latest('hora_inicio')->first();
+        $tipoServicio = $alumnoServicio->tipo_servicio;
+
+        // Filtrar horas del alumno actual
+        $horasAlumno = $actividad->horas->where('id_alumno_servicio', $alumnoServicio->id);
+        $horaAbierta = $horasAlumno->whereNull('hora_final')->sortByDesc('hora_inicio')->first();
+
         $totalMinutos = null;
         if ($tipoServicio === 'Adelantando') {
-            $totalMinutos = $this->calcularTotalMinutos($actividad);
+            $totalMinutos = $this->calcularTotalMinutos($actividad, $alumnoServicio->id);
         }
 
         return view('alumno.actividad', [
@@ -52,6 +64,8 @@ class ActividadController extends Controller
             'tipoServicio' => $tipoServicio,
             'horaAbierta' => $horaAbierta,
             'totalMinutos' => $totalMinutos,
+            'alumnoServicio' => $alumnoServicio,
+            'horasAlumno' => $horasAlumno,
         ]);
     }
 
@@ -59,21 +73,21 @@ class ActividadController extends Controller
     public function checkIn($id)
     {
         $actividad = Actividad::with('servicio')->findOrFail($id);
-        $user = Auth::user();
-        if ($actividad->servicio->id_alumno !== $user->id_usuario) {
-            abort(403);
-        }
+        $alumnoServicio = $this->getAlumnoServicio($actividad);
 
-        if ($actividad->servicio->tipo_servicio !== 'Adelantando') {
+        if ($alumnoServicio->tipo_servicio !== 'Adelantando') {
             return back()->withErrors(['No disponible para tipo Regular.']);
         }
 
-        // Solo se permite si esta activa
         if ($actividad->estado !== 'Activa') {
             return back()->withErrors(['La actividad no está activa para registrar horas.']);
         }
 
-        $horaAbierta = $actividad->horas()->whereNull('hora_final')->first();
+        $horaAbierta = $actividad->horas()
+            ->where('id_alumno_servicio', $alumnoServicio->id)
+            ->whereNull('hora_final')
+            ->first();
+
         if ($horaAbierta) {
             return back()->withErrors(['Ya existe un registro de horas abierto.']);
         }
@@ -81,6 +95,7 @@ class ActividadController extends Controller
         $actividad->horas()->create([
             'hora_inicio' => now(),
             'asistencia' => 'Aprobada',
+            'id_alumno_servicio' => $alumnoServicio->id,
         ]);
 
         return back()->with('status', 'Check-in registrado.');
@@ -90,16 +105,18 @@ class ActividadController extends Controller
     public function checkOut($id)
     {
         $actividad = Actividad::with('servicio')->findOrFail($id);
-        $user = Auth::user();
-        if ($actividad->servicio->id_alumno !== $user->id_usuario) {
-            abort(403);
-        }
+        $alumnoServicio = $this->getAlumnoServicio($actividad);
 
-        if ($actividad->servicio->tipo_servicio !== 'Adelantando') {
+        if ($alumnoServicio->tipo_servicio !== 'Adelantando') {
             return back()->withErrors(['No disponible para tipo Regular.']);
         }
 
-        $horaAbierta = $actividad->horas()->whereNull('hora_final')->latest('hora_inicio')->first();
+        $horaAbierta = $actividad->horas()
+            ->where('id_alumno_servicio', $alumnoServicio->id)
+            ->whereNull('hora_final')
+            ->latest('hora_inicio')
+            ->first();
+
         if (!$horaAbierta) {
             return back()->withErrors(['No hay registro de horas abierto.']);
         }
@@ -111,9 +128,7 @@ class ActividadController extends Controller
         $diffMinutes = $inicio->diffInMinutes($fin);
         $horasDecimales = round($diffMinutes / 60, 2);
 
-        if (Schema::hasColumn('horas', 'horas_totales')) {
-            $horaAbierta->horas_totales = $horasDecimales;
-        }
+        $horaAbierta->horas_totales = $horasDecimales;
 
         $horaAbierta->save();
 
@@ -124,12 +139,9 @@ class ActividadController extends Controller
     public function marcarRealizada($id)
     {
         $actividad = Actividad::with('servicio')->findOrFail($id);
-        $user = Auth::user();
-        if ($actividad->servicio->id_alumno !== $user->id_usuario) {
-            abort(403);
-        }
+        $alumnoServicio = $this->getAlumnoServicio($actividad);
 
-        if ($actividad->servicio->tipo_servicio !== 'Regular') {
+        if ($alumnoServicio->tipo_servicio !== 'Regular') {
             return back()->withErrors(['Solo disponible para tipo Regular.']);
         }
 
@@ -147,12 +159,9 @@ class ActividadController extends Controller
     public function enviarRevision($id)
     {
         $actividad = Actividad::with(['servicio', 'horas'])->findOrFail($id);
-        $user = Auth::user();
-        if ($actividad->servicio->id_alumno !== $user->id_usuario) {
-            abort(403);
-        }
+        $alumnoServicio = $this->getAlumnoServicio($actividad);
 
-        if ($actividad->servicio->tipo_servicio !== 'Adelantando') {
+        if ($alumnoServicio->tipo_servicio !== 'Adelantando') {
             return back()->withErrors(['Solo disponible para tipo Adelantando.']);
         }
 
@@ -160,7 +169,11 @@ class ActividadController extends Controller
             return back()->withErrors(['La actividad ya no está activa para enviarse a revisión.']);
         }
 
-        $horaAbierta = $actividad->horas()->whereNull('hora_final')->first();
+        $horaAbierta = $actividad->horas()
+            ->where('id_alumno_servicio', $alumnoServicio->id)
+            ->whereNull('hora_final')
+            ->first();
+
         if ($horaAbierta) {
             return back()->withErrors(['No puedes enviar a revisión con una hora abierta.']);
         }
@@ -168,7 +181,7 @@ class ActividadController extends Controller
         $actividad->estado = 'En Revisión';
         $actividad->save();
 
-        $totalMinutos = $this->calcularTotalMinutos($actividad);
+        $totalMinutos = $this->calcularTotalMinutos($actividad, $alumnoServicio->id);
         $horas = intdiv($totalMinutos, 60);
         $minutos = $totalMinutos % 60;
 
@@ -179,10 +192,7 @@ class ActividadController extends Controller
     public function cancelarRevision($id)
     {
         $actividad = Actividad::with('servicio')->findOrFail($id);
-        $user = Auth::user();
-        if ($actividad->servicio->id_alumno !== $user->id_usuario) {
-            abort(403);
-        }
+        $this->getAlumnoServicio($actividad);
 
         return back()->withErrors(['Una actividad en revisión ya no puede ser cancelada por el alumno.']);
     }
@@ -191,28 +201,45 @@ class ActividadController extends Controller
     public function reporte(Request $request)
     {
         $user = Auth::user();
-        // Servicios del alumno
-        $serviciosIds = Servicio::where('id_alumno', $user->id_usuario)->pluck('id_servicio');
-        $actividades = Actividad::with(['horas', 'servicio'])
-            ->whereIn('id_servicio', $serviciosIds)
+
+        // Obtener las inscripciones del alumno
+        $inscripciones = AlumnoServicio::where('id_alumno', $user->id_usuario)->get();
+        $serviciosIds = $inscripciones->pluck('id_servicio');
+        $inscripcionesMap = $inscripciones->keyBy('id_servicio');
+
+        // Actividades aprobadas del alumno
+        $actividades = Actividad::with(['horas', 'servicio', 'alumnoServicio'])
             ->where('estado', 'Aprobada')
+            ->whereIn('id_alumno_servicio', $inscripciones->pluck('id'))
             ->orderBy('fecha_limite', 'desc')
             ->get();
 
-        // Preparar datos de horas (solo Adelantando)
-        $datos = $actividades->map(function ($act) {
+        // Preparar datos de horas
+        $datos = $actividades->map(function ($act) use ($inscripciones) {
+            $as = $inscripciones->firstWhere('id', $act->id_alumno_servicio);
+            $tipoServicio = $as ? $as->tipo_servicio : 'Regular';
+
             $totalHoras = null;
-            if ($act->servicio->tipo_servicio === 'Adelantando') {
-                $totalMinutos = $this->calcularTotalMinutos($act);
+            if ($tipoServicio === 'Adelantando') {
+                $horasAlumno = $act->horas->where('id_alumno_servicio', $act->id_alumno_servicio);
+                $totalMinutos = (int) $horasAlumno->reduce(function ($carry, $h) {
+                    if ($h->hora_final) {
+                        $inicio = Carbon::parse($h->hora_inicio);
+                        $fin = Carbon::parse($h->hora_final);
+                        $carry += $inicio->diffInMinutes($fin);
+                    }
+                    return $carry;
+                }, 0);
                 $horas = intdiv($totalMinutos, 60);
                 $minutos = $totalMinutos % 60;
                 $totalHoras = $horas . 'h ' . $minutos . 'm';
             }
+
             return [
                 'id' => $act->id_actividad,
                 'titulo' => $act->actividad,
                 'fecha' => $act->fecha_limite,
-                'tipo' => $act->servicio->tipo_servicio,
+                'tipo' => $tipoServicio,
                 'total_horas' => $totalHoras,
             ];
         });

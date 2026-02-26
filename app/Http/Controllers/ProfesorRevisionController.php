@@ -14,10 +14,10 @@ class ProfesorRevisionController extends Controller
     public function index()
     {
         $profesorId = Auth::user()->id_usuario;
-        $actividades = Actividad::with(['servicio.alumno', 'horas'])
+        $actividades = Actividad::with(['servicio', 'alumnoServicio.alumno', 'horas'])
             ->where('estado', 'En Revisión')
             ->whereHas('servicio', function ($q) use ($profesorId) {
-                $q->where('id_profesor_asesor', $profesorId);
+                $q->where('id_profesor', $profesorId);
             })
             ->orderBy('fecha_limite', 'asc')
             ->get();
@@ -31,7 +31,7 @@ class ProfesorRevisionController extends Controller
         $hora = Hora::with('actividad.servicio')->findOrFail($idHora);
         $profesorId = Auth::user()->id_usuario;
 
-        if ($hora->actividad->servicio->id_profesor_asesor !== $profesorId) {
+        if ($hora->actividad->servicio->id_profesor !== $profesorId) {
             abort(403);
         }
 
@@ -69,7 +69,7 @@ class ProfesorRevisionController extends Controller
         $actividad = Actividad::with('servicio')->findOrFail($id);
         $profesorId = Auth::user()->id_usuario;
 
-        if ($actividad->servicio->id_profesor_asesor !== $profesorId) {
+        if ($actividad->servicio->id_profesor !== $profesorId) {
             abort(403);
         }
 
@@ -85,7 +85,7 @@ class ProfesorRevisionController extends Controller
         $actividad = Actividad::with('servicio')->findOrFail($id);
         $profesorId = Auth::user()->id_usuario;
 
-        if ($actividad->servicio->id_profesor_asesor !== $profesorId) {
+        if ($actividad->servicio->id_profesor !== $profesorId) {
             abort(403);
         }
 

@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProfesorController;
 use App\Http\Controllers\DependenciaController;
@@ -10,7 +9,7 @@ use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\ActividadController;
 use App\Http\Controllers\ProfesorRevisionController;
 use App\Http\Controllers\ProfesorActividadController;
-use App\Models\Servicio;
+use App\Models\AlumnoServicio;
 use App\Models\Actividad;
 use Illuminate\Support\Facades\Auth;
 
@@ -40,37 +39,44 @@ Route::middleware(['auth'])->group(function () {
     // Alumno: pagina principal y progreso
     Route::get('/usuario', function () {
         $user = Auth::user();
-        $serviciosIds = Servicio::where('id_alumno', $user->id_usuario)->pluck('id_servicio');
-        $actividades = Actividad::with(['servicio', 'horas'])
-            ->whereIn('id_servicio', $serviciosIds)
+
+        // Obtener inscripciones del alumno
+        $inscripciones = AlumnoServicio::where('id_alumno', $user->id_usuario)->get();
+
+        // Actividades del alumno
+        $actividades = Actividad::with(['servicio', 'horas', 'alumnoServicio'])
             ->where('estado', '!=', 'Rechazada')
+            ->whereIn('id_alumno_servicio', $inscripciones->pluck('id'))
             ->orderBy('fecha_limite', 'asc')
             ->get();
 
-        $actividades->each(function ($a) {
-            if ($a->servicio->tipo_servicio === 'Adelantando') {
-                if (\Illuminate\Support\Facades\Schema::hasColumn('horas', 'horas_totales')) {
-                    $horas = (float) $a->horas->sum('horas_totales');
-                    $a->total_minutos_calculados = (int) round($horas * 60);
-                } else {
-                    $a->total_minutos_calculados = $a->horas->reduce(function ($carry, $h) {
-                        if ($h->hora_final) {
-                            $inicio = \Carbon\Carbon::parse($h->hora_inicio);
-                            $fin = \Carbon\Carbon::parse($h->hora_final);
-                            $carry += $inicio->diffInMinutes($fin);
-                        }
-                        return $carry;
-                    }, 0);
-                }
+        $actividades->each(function ($a) use ($inscripciones) {
+            // Determinar tipo de servicio para este alumno
+            $as = $inscripciones->firstWhere('id', $a->id_alumno_servicio);
+            $tipoServicio = $as ? $as->tipo_servicio : 'Regular';
+            $a->tipo_servicio_alumno = $tipoServicio;
+
+            if ($tipoServicio === 'Adelantando' && $as) {
+                $asId = $as->id;
+
+                $horasAlumno = $a->horas->where('id_alumno_servicio', $asId);
+                $a->total_minutos_calculados = (int) $horasAlumno->reduce(function ($carry, $h) {
+                    if ($h->hora_final) {
+                        $inicio = \Carbon\Carbon::parse($h->hora_inicio);
+                        $fin = \Carbon\Carbon::parse($h->hora_final);
+                        $carry += $inicio->diffInMinutes($fin);
+                    }
+                    return $carry;
+                }, 0);
             }
         });
 
         $mostrarProgreso = $actividades->contains(function ($a) {
-            return $a->servicio->tipo_servicio === 'Adelantando';
+            return $a->tipo_servicio_alumno === 'Adelantando';
         });
 
         $totalMinutos = $actividades->filter(function ($a) {
-            return $a->servicio->tipo_servicio === 'Adelantando' && $a->estado === 'Aprobada';
+            return $a->tipo_servicio_alumno === 'Adelantando' && $a->estado === 'Aprobada';
         })->sum(function ($a) {
             return $a->total_minutos_calculados ?? 0;
         });

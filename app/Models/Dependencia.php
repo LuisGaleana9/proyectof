@@ -10,11 +10,11 @@ class Dependencia extends Model
     protected $table = 'dependencias';
     protected $primaryKey = 'id_dependencia';
 
-    protected $fillable = ['nombre', 'id_profesor_responsable'];
+    protected $fillable = ['nombre'];
 
-    // Profesor responsable de la dependencia
-    public function responsable()
+    // Profesores adscritos a esta dependencia
+    public function profesores()
     {
-        return $this->belongsTo(Usuario::class, 'id_profesor_responsable', 'id_usuario');
+        return $this->hasMany(Usuario::class, 'id_dependencia', 'id_dependencia');
     }
 }

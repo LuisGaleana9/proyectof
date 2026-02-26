@@ -4,16 +4,15 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('dependencias', function (Blueprint $table) {
-            $table->id('id_dependencia');
-            $table->string('nombre');
-            $table->timestamps();
+        Schema::table('horas', function (Blueprint $table) {
+            $table->decimal('horas_totales', 8, 2)->nullable()->after('hora_final');
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('dependencias');
+        Schema::table('horas', function (Blueprint $table) {
+            $table->dropColumn('horas_totales');
+        });
     }
 };

@@ -28,6 +28,13 @@ return new class extends Migration {
                 ->on('servicios')
                 ->onDelete('cascade');
 
+            // Actividad individual (si es null, es grupal para todo el servicio)
+            $table->unsignedBigInteger('id_alumno_servicio')->nullable();
+            $table->foreign('id_alumno_servicio')
+                ->references('id')
+                ->on('alumno_servicio')
+                ->onDelete('set null');
+
             $table->timestamps();
         });
     }

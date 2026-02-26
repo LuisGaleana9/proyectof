@@ -4,37 +4,30 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Dependencia;
-use App\Models\Usuario;
 
 class DependenciaController extends Controller
 {
     // Listar dependencias
     public function index()
     {
-        // Obtenemos todas las dependencias con su responsable
-        $dependencias = Dependencia::with('responsable')->get();
+        $dependencias = Dependencia::all();
         return view('admin.dependencias.index', compact('dependencias'));
     }
 
     // Mostrar formulario de alta
     public function create()
     {
-        // Obtener profesores para asignar como responsables
-        $profesores = Usuario::where('rol', 'profesor')->get();
-        return view('admin.dependencias.crear', compact('profesores'));
+        return view('admin.dependencias.crear');
     }
 
     // Guardar nueva dependencia
     public function store(Request $request)
     {
-        // Validar datos del formulario
         $request->validate([
             'nombre' => 'required|string|max:255|unique:dependencias,nombre',
-            'id_profesor_responsable' => 'required|exists:usuarios,id_usuario'
         ]);
 
-        // Crear el registro en la base de datos
-        Dependencia::create($request->all());
+        Dependencia::create(['nombre' => $request->nombre]);
 
         return redirect()->route('dependencias.index');
     }
@@ -43,8 +36,7 @@ class DependenciaController extends Controller
     public function edit($id)
     {
         $dependencia = Dependencia::findOrFail($id);
-        $profesores = Usuario::where('rol', 'profesor')->get();
-        return view('admin.dependencias.editar', compact('dependencia', 'profesores'));
+        return view('admin.dependencias.editar', compact('dependencia'));
     }
 
     // Actualizar dependencia
@@ -52,13 +44,11 @@ class DependenciaController extends Controller
     {
         $dependencia = Dependencia::findOrFail($id);
 
-        // Validar datos modificados
         $request->validate([
             'nombre' => 'required|string|max:255|unique:dependencias,nombre,' . $id . ',id_dependencia',
-            'id_profesor_responsable' => 'required|exists:usuarios,id_usuario'
         ]);
 
-        $dependencia->update($request->all());
+        $dependencia->update(['nombre' => $request->nombre]);
 
         return redirect()->route('dependencias.index');
     }

@@ -15,7 +15,7 @@
                 <tr>
                     <th>Actividad</th>
                     <th>Alumno</th>
-                    <th>Tipo</th>
+                    <th>Servicio</th>
                     <th>Fecha límite</th>
                     <th>Registros de horas</th>
                     <th>Acciones</th>
@@ -25,15 +25,14 @@
                 @forelse($actividades as $a)
                     <tr>
                         <td class="actividad-col">{{ $a->actividad }}</td>
-                        <td>{{ $a->servicio->alumno->nombre ?? '—' }}</td>
                         <td>
-                            <span class="badge {{ $a->servicio->tipo_servicio === 'Adelantando' ? 'badge-info' : 'badge-success' }}">
-                                {{ $a->servicio->tipo_servicio }}
-                            </span>
+                            {{ $a->alumnoServicio->alumno->nombre ?? '—' }}
+                            <br><small class="muted">{{ $a->alumnoServicio->tipo_servicio ?? '' }}</small>
                         </td>
+                        <td>{{ $a->servicio->nombre ?? '—' }}</td>
                         <td>{{ $a->fecha_limite }}</td>
                         <td class="horas-col">
-                            @if($a->servicio->tipo_servicio === 'Adelantando')
+                            @if($a->alumnoServicio && $a->alumnoServicio->tipo_servicio === 'Adelantando')
                                 <div class="table-responsive">
                                 <table class="table horas-table" style="margin: 0;">
                                     <thead>
@@ -82,7 +81,7 @@
                                     Total válido actual: {{ intdiv($totalMinutos, 60) }}h {{ $totalMinutos % 60 }}m
                                 </div>
                             @else
-                                <span class="muted">No aplica (servicio Regular).</span>
+                                <span class="muted">No aplica.</span>
                             @endif
                         </td>
                         <td>

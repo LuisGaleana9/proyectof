@@ -11,14 +11,6 @@
             <li>
                 <span>
                     <strong>{{ $dep->nombre }}</strong>
-                    @if($dep->responsable)
-                        <br>
-                        <span style="font-size: 0.9em; color: #6b7280;">Responsable: {{ $dep->responsable->nombre }}
-                            {{ $dep->responsable->apellidos_p }}</span>
-                    @else
-                        <br>
-                        <span style="font-size: 0.9em; color: #9ca3af;">Sin responsable</span>
-                    @endif
                 </span>
                 <div style="display: flex; gap: 0.5rem;">
                     <a href="{{ route('dependencias.edit', $dep) }}" class="btn btn-secondary">Editar</a>

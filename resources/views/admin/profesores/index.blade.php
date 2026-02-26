@@ -8,7 +8,14 @@
     <ul>
         @foreach($profesores as $profesor)
             <li>
-                <span>{{ $profesor->nombre }} {{ $profesor->apellidos_p }} - {{ $profesor->email }}</span>
+                <span>
+                    {{ $profesor->nombre }} {{ $profesor->apellidos_p }} - {{ $profesor->email }}
+                    @if($profesor->dependencia)
+                        <br><small style="color: #6b7280;">Dependencia: {{ $profesor->dependencia->nombre }}</small>
+                    @else
+                        <br><small style="color: #9ca3af;">Sin dependencia asignada</small>
+                    @endif
+                </span>
 
                 <div style="display: flex; gap: 0.5rem;">
                     <a href="{{ route('profesores.edit', $profesor) }}" class="btn btn-secondary">Editar</a>

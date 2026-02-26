@@ -19,6 +19,15 @@ return new class extends Migration {
                     ->on('usuarios')
                     ->onDelete('set null');
             }
+
+            if (!Schema::hasColumn('usuarios', 'id_dependencia')) {
+                // Dependencia a la que pertenece el profesor
+                $table->unsignedBigInteger('id_dependencia')->nullable()->after('profesor_id');
+                $table->foreign('id_dependencia')
+                    ->references('id_dependencia')
+                    ->on('dependencias')
+                    ->onDelete('set null');
+            }
         });
     }
 
@@ -28,6 +37,8 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('usuarios', function (Blueprint $table) {
+            $table->dropForeign(['id_dependencia']);
+            $table->dropColumn('id_dependencia');
             $table->dropForeign(['profesor_id']);
             $table->dropColumn('profesor_id');
         });

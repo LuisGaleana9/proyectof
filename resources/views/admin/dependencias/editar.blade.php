@@ -9,18 +9,10 @@
         @method('PUT')
 
         <label>Nombre:</label>
-        <input type="text" name="nombre" value="{{ $dependencia->nombre }}" required>
-        <br><br>
-
-        <label>Profesor Responsable:</label>
-        <select name="id_profesor_responsable" required>
-            <option value="">Seleccione un profesor</option>
-            @foreach($profesores as $profe)
-                <option value="{{ $profe->id_usuario }}" {{ $dependencia->id_profesor_responsable == $profe->id_usuario ? 'selected' : '' }}>
-                    {{ $profe->nombre }} {{ $profe->apellidos_p }} {{ $profe->apellidos_m }}
-                </option>
-            @endforeach
-        </select>
+        <input type="text" name="nombre" value="{{ old('nombre', $dependencia->nombre) }}" required>
+        @error('nombre')
+            <div class="muted" style="color:#b91c1c; margin-top:-0.5rem; margin-bottom:0.75rem;">{{ $message }}</div>
+        @enderror
         <br><br>
 
         <button type="submit" class="btn">Actualizar</button>

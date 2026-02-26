@@ -17,46 +17,53 @@
         @csrf
         @method('PUT')
 
-        <label>Alumno:</label>
-        <select name="id_alumno" required>
-            <option value="">Seleccione un alumno</option>
-            @foreach($alumnos as $alumno)
-                <option value="{{ $alumno->id_usuario }}" {{ $servicio->id_alumno == $alumno->id_usuario ? 'selected' : '' }}>
-                    {{ $alumno->nombre }} {{ $alumno->apellidos_p }} ({{ $alumno->matricula }})
-                </option>
-            @endforeach
-        </select>
+        <label>Nombre del servicio:</label>
+        <input type="text" name="nombre" value="{{ old('nombre', $servicio->nombre) }}" required>
+        @error('nombre')
+            <div class="muted" style="color:#b91c1c; margin-top:-0.5rem; margin-bottom:0.75rem;">{{ $message }}</div>
+        @enderror
 
-        <label>Dependencia:</label>
-        <select name="id_dependencia" required>
-            <option value="">Seleccione una dependencia</option>
-            @foreach($dependencias as $dep)
-                <option value="{{ $dep->id_dependencia }}" {{ $servicio->id_dependencia == $dep->id_dependencia ? 'selected' : '' }}>
-                    {{ $dep->nombre }}
-                </option>
-            @endforeach
-        </select>
-
-        <label>Tipo de Servicio:</label>
-        <select name="tipo_servicio" required>
-            <option value="Regular" {{ $servicio->tipo_servicio == 'Regular' ? 'selected' : '' }}>Regular</option>
-            <option value="Adelantando" {{ $servicio->tipo_servicio == 'Adelantando' ? 'selected' : '' }}>Adelantando</option>
-        </select>
-
-        <label>Estado:</label>
-        <select name="estado_servicio" required>
-            <option value="Activo" {{ $servicio->estado_servicio == 'Activo' ? 'selected' : '' }}>Activo</option>
-            <option value="En pausa" {{ $servicio->estado_servicio == 'En pausa' ? 'selected' : '' }}>En pausa</option>
-            <option value="Finalizado" {{ $servicio->estado_servicio == 'Finalizado' ? 'selected' : '' }}>Finalizado</option>
-        </select>
-
-        <label>Fecha de Inicio:</label>
-        <input type="date" name="fecha_inicio" value="{{ $servicio->fecha_inicio }}" required>
-
-        <label>Fecha de Fin:</label>
-        <input type="date" name="fecha_fin" value="{{ $servicio->fecha_fin }}">
+        <label>Descripción:</label>
+        <textarea name="descripcion" rows="3">{{ old('descripcion', $servicio->descripcion) }}</textarea>
+        @error('descripcion')
+            <div class="muted" style="color:#b91c1c; margin-top:-0.5rem; margin-bottom:0.75rem;">{{ $message }}</div>
+        @enderror
 
         <br>
         <button type="submit" class="btn">Actualizar</button>
     </form>
+
+    @if($alumnosInscritos->isNotEmpty())
+        <div style="margin-top: 2rem;">
+            <h3>Alumnos inscritos en este servicio</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Alumno</th>
+                        <th>Tipo</th>
+                        <th>Inicio</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($alumnosInscritos as $as)
+                        <tr>
+                            <td>{{ $as->alumno->nombre }} {{ $as->alumno->apellidos_p }} ({{ $as->alumno->matricula }})</td>
+                            <td>
+                                <span class="badge {{ $as->tipo_servicio === 'Adelantando' ? 'badge-info' : 'badge-success' }}">
+                                    {{ $as->tipo_servicio }}
+                                </span>
+                            </td>
+                            <td>{{ $as->fecha_inicio }}</td>
+                            <td>
+                                <span class="badge {{ $as->estado_servicio === 'Activo' ? 'badge-success' : ($as->estado_servicio === 'En pausa' ? 'badge-warning' : 'badge-info') }}">
+                                    {{ $as->estado_servicio }}
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
 @endsection

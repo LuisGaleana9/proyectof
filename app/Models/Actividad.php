@@ -18,12 +18,19 @@ class Actividad extends Model
         'estado',
         'fecha_limite',
         'id_servicio',
+        'id_alumno_servicio',
     ];
 
     public function servicio(): BelongsTo
     {
         // Servicio al que pertenece la actividad
         return $this->belongsTo(Servicio::class, 'id_servicio', 'id_servicio');
+    }
+
+    // Alumno asignado a la actividad
+    public function alumnoServicio(): BelongsTo
+    {
+        return $this->belongsTo(AlumnoServicio::class, 'id_alumno_servicio', 'id');
     }
 
     public function horas(): HasMany

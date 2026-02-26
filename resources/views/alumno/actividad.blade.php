@@ -18,6 +18,7 @@
         </span>
         <br>
         <strong>Fecha límite:</strong> {{ $actividad->fecha_limite }}<br>
+        <strong>Servicio:</strong> {{ $actividad->servicio->nombre ?? '—' }}<br>
         <strong>Tipo de servicio:</strong>
         <span class="badge {{ $tipoServicio === 'Adelantando' ? 'badge-info' : 'badge-success' }}">{{ $tipoServicio }}</span>
         @if($tipoServicio === 'Adelantando')
@@ -68,11 +69,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($actividad->horas as $h)
+                    @forelse($horasAlumno as $h)
                         <tr>
                             <td>{{ $h->hora_inicio }}</td>
                             <td>{{ $h->hora_final ?? '—' }}</td>
-                            <td>{{ $h->horas_totales ?? '—' }}</td>
+                            <td>
+                                @if($h->horas_totales !== null)
+                                    @php
+                                        $mins = (int) round($h->horas_totales * 60);
+                                        $hh = intdiv($mins, 60);
+                                        $mm = $mins % 60;
+                                    @endphp
+                                    {{ $hh }}h {{ $mm }}m
+                                @else
+                                    —
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
