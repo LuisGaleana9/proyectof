@@ -71,13 +71,18 @@ class AlumnoController extends Controller
         ]);
 
         // Inscribir al alumno en el servicio
-        AlumnoServicio::create([
+        $inscripcion = AlumnoServicio::create([
             'id_alumno' => $alumno->id_usuario,
             'id_servicio' => $servicio->id_servicio,
             'tipo_servicio' => $request->tipo_servicio,
             'fecha_inicio' => $request->fecha_inicio,
             'estado_servicio' => 'Activo',
         ]);
+
+        // Crear reportes programados para alumnos Regular
+        if ($request->tipo_servicio === 'Regular') {
+            $inscripcion->crearReportesProgramados();
+        }
 
         return redirect()->route('alumnos.index');
     }

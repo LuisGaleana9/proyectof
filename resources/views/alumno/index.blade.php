@@ -99,4 +99,40 @@
             </table>
         @endif
     </div>
+
+    @if(isset($proximoReporte) && $proximoReporte)
+        @php
+            $diasRestantes = now()->startOfDay()->diffInDays($proximoReporte->fecha_entrega, false);
+            $puedeEscribir = $proximoReporte->puedeEscribir();
+        @endphp
+        <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--primary-color);">
+            <h3 style="margin-top: 0;">Reportes de Servicio Social</h3>
+
+            @if($proximoReporte->estado === 'Corregir')
+                <div class="alert alert-danger" style="margin-bottom: 0.75rem;">
+                    <strong>Tu {{ $proximoReporte->nombreReporte() }} necesita correcciones.</strong>
+                </div>
+            @endif
+
+            <p style="margin: 0.25rem 0;">
+                Próximo reporte: <strong>{{ $proximoReporte->nombreReporte() }}</strong>
+                — Fecha de entrega: <strong>{{ $proximoReporte->fecha_entrega->format('d/m/Y') }}</strong>
+            </p>
+
+            @if($diasRestantes > 10)
+                <p class="muted" style="margin-top: 0.25rem;">
+                    Podrás escribirlo a partir del {{ $proximoReporte->fechaApertura()->format('d/m/Y') }}.
+                </p>
+            @elseif($puedeEscribir)
+                <p style="color: #166534; margin-top: 0.25rem;">
+                    Estas en la fecha para escribir tu reporte.
+                </p>
+                <a href="{{ route('alumno.reportes.escribir', $proximoReporte->id) }}" class="btn" style="margin-top: 0.5rem;">
+                    {{ $proximoReporte->estado === 'Corregir' ? 'Corregir reporte' : 'Escribir reporte' }}
+                </a>
+            @endif
+
+            <a href="{{ route('alumno.reportes.index') }}" class="btn btn-secondary" style="margin-top: 0.5rem;">Ver todos los reportes</a>
+        </div>
+    @endif
 @endsection

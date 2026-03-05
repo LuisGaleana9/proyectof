@@ -11,7 +11,7 @@ use Carbon\Carbon;
 
 class ActividadController extends Controller
 {
-    // Calcular minutos acumulados por actividad (para un alumno especifico)
+    // Calcular minutos acumulados por actividad 
     private function calcularTotalMinutos(Actividad $actividad, $alumnoServicioId = null): int
     {
         $horas = $actividad->horas;

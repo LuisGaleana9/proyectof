@@ -9,8 +9,11 @@ use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\ActividadController;
 use App\Http\Controllers\ProfesorRevisionController;
 use App\Http\Controllers\ProfesorActividadController;
+use App\Http\Controllers\ReporteAlumnoController;
+use App\Http\Controllers\ReporteProfesorController;
 use App\Models\AlumnoServicio;
 use App\Models\Actividad;
+use App\Models\Reporte;
 use Illuminate\Support\Facades\Auth;
 
 // Rutas publicas del sistema
@@ -87,6 +90,16 @@ Route::middleware(['auth'])->group(function () {
         $totalHorasDec = $totalMinutos / 60;
         $porcentaje = $metaHoras > 0 ? min(100, round(($totalHorasDec / $metaHoras) * 100, 1)) : 0;
 
+        // Obtener proximo reporte para alumnos Regular
+        $proximoReporte = null;
+        $inscripcionRegular = $inscripciones->firstWhere('tipo_servicio', 'Regular');
+        if ($inscripcionRegular) {
+            $proximoReporte = Reporte::where('id_alumno_servicio', $inscripcionRegular->id)
+                ->whereIn('estado', ['Pendiente', 'Corregir'])
+                ->orderBy('numero_reporte', 'asc')
+                ->first();
+        }
+
         return view('alumno.index', [
             'actividades' => $actividades,
             'totalHoras' => $totalHoras,
@@ -94,6 +107,7 @@ Route::middleware(['auth'])->group(function () {
             'porcentaje' => $porcentaje,
             'metaHoras' => $metaHoras,
             'mostrarProgreso' => $mostrarProgreso,
+            'proximoReporte' => $proximoReporte,
         ]);
     });
 
@@ -106,9 +120,26 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/alumno/actividades/{id}/cancelar-revision', [ActividadController::class, 'cancelarRevision'])->name('alumno.actividad.cancelar');
     Route::get('/alumno/reporte', [ActividadController::class, 'reporte'])->name('alumno.reporte');
 
+    // Alumno: reportes bimestrales de servicio social
+    Route::get('/alumno/reportes', [ReporteAlumnoController::class, 'index'])->name('alumno.reportes.index');
+    Route::get('/alumno/reportes/{id}/escribir', [ReporteAlumnoController::class, 'escribir'])->name('alumno.reportes.escribir');
+    Route::post('/alumno/reportes/{id}/enviar', [ReporteAlumnoController::class, 'enviar'])->name('alumno.reportes.enviar');
+    Route::get('/alumno/reportes/{id}/pdf', [ReporteAlumnoController::class, 'descargarPdf'])->name('alumno.reportes.pdf');
+
     // Profesor: panel principal
     Route::get('/profesor', function () {
-        return view('profesor.index');
+        $profesorId = Auth::user()->id_usuario;
+        $reportesPendientes = Reporte::where('estado', 'Enviado')
+            ->whereHas('alumnoServicio.servicio', function ($q) use ($profesorId) {
+                $q->where('id_profesor', $profesorId);
+            })
+            ->with(['alumnoServicio.alumno', 'alumnoServicio.servicio'])
+            ->orderBy('fecha_entrega', 'asc')
+            ->get();
+
+        return view('profesor.index', [
+            'reportesPendientes' => $reportesPendientes,
+        ]);
     });
     Route::resource('/profesor/alumnos', AlumnoController::class);
     Route::resource('/profesor/servicios', ServicioController::class);
@@ -126,5 +157,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profesor/revisiones/{id}/aprobar', [ProfesorRevisionController::class, 'aprobar'])->name('profesor.revisiones.aprobar');
     Route::post('/profesor/revisiones/{id}/rechazar', [ProfesorRevisionController::class, 'rechazar'])->name('profesor.revisiones.rechazar');
     Route::delete('/profesor/revisiones/horas/{idHora}', [ProfesorRevisionController::class, 'rechazarHora'])->name('profesor.revisiones.horas.rechazar');
+
+    // Profesor: revision de reportes bimestrales
+    Route::get('/profesor/reportes', [ReporteProfesorController::class, 'index'])->name('profesor.reportes.index');
+    Route::get('/profesor/reportes/{id}', [ReporteProfesorController::class, 'revisar'])->name('profesor.reportes.revisar');
+    Route::post('/profesor/reportes/{id}/aprobar', [ReporteProfesorController::class, 'aprobar'])->name('profesor.reportes.aprobar');
+    Route::post('/profesor/reportes/{id}/rechazar', [ReporteProfesorController::class, 'rechazar'])->name('profesor.reportes.rechazar');
+    Route::post('/profesor/reportes/{id}/corregir', [ReporteProfesorController::class, 'corregir'])->name('profesor.reportes.corregir');
 
 });

@@ -24,7 +24,8 @@
 
         <nav>
             <a href="{{ url('/usuario') }}">Inicio</a>
-            <a href="{{ route('alumno.reporte') }}">Reporte</a>
+            <a href="{{ route('alumno.reportes.index') }}">Reportes</a>
+            <a href="{{ route('alumno.reporte') }}">Actividades</a>
 
             <form action="{{ url('/logout') }}" method="POST" style="margin-left: auto;">
                 @csrf

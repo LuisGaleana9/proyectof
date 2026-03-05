@@ -28,6 +28,14 @@
             <a href="{{ route('servicios.index') }}">Servicios</a>
             <a href="{{ route('profesor.actividades.index') }}">Actividades</a>
             <a href="{{ route('profesor.revisiones') }}">Revisiones</a>
+            <a href="{{ route('profesor.reportes.index') }}" style="position: relative;">
+                Reportes
+                @if(isset($reportesPendientesCount) && $reportesPendientesCount > 0)
+                    <span style="position: absolute; top: -8px; right: -10px; background-color: #ef4444; color: white; font-size: 0.7rem; font-weight: 700; padding: 1px 6px; border-radius: 9999px; min-width: 18px; text-align: center;">
+                        {{ $reportesPendientesCount }}
+                    </span>
+                @endif
+            </a>
 
             <form action="{{ url('/logout') }}" method="POST" style="margin-left: auto;">
                 @csrf
