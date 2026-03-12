@@ -29,15 +29,22 @@ class ReporteProfesorController extends Controller
     {
         $profesorId = Auth::user()->id_usuario;
 
-        $reporte = Reporte::with(['alumnoServicio.alumno', 'alumnoServicio.servicio'])
-            ->findOrFail($id);
+        $reporte = Reporte::with([
+            'alumnoServicio.alumno',
+            'alumnoServicio.servicio.profesor.dependencia',
+        ])->findOrFail($id);
 
         // Verificar que pertenece a un servicio del profesor
         if ($reporte->alumnoServicio->servicio->id_profesor !== $profesorId) {
             abort(403);
         }
 
-        return view('profesor.reportes.revisar', ['reporte' => $reporte]);
+        return view('profesor.reportes.revisar', [
+            'reporte' => $reporte,
+            'alumno' => $reporte->alumnoServicio->alumno,
+            'servicio' => $reporte->alumnoServicio->servicio,
+            'inscripcion' => $reporte->alumnoServicio,
+        ]);
     }
 
     // Aprobar reporte

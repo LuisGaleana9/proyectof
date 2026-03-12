@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reporte;
+use App\Models\Actividad;
 use App\Models\AlumnoServicio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,9 +60,53 @@ class ReporteAlumnoController extends Controller
                 ->withErrors(['No puedes escribir este reporte en este momento.']);
         }
 
+        // Calcular periodo del bimestre
+        $inscripcion = $reporte->alumnoServicio;
+        $fechaInicio = Carbon::parse($inscripcion->fecha_inicio);
+
+        if ($reporte->tipo === 'General') {
+            $periodoInicio = $fechaInicio->copy();
+            $periodoFin = $fechaInicio->copy()->addMonths(6);
+        } else {
+            $periodoInicio = $fechaInicio->copy()->addMonths(($reporte->numero_reporte - 1) * 2);
+            $periodoFin = $fechaInicio->copy()->addMonths($reporte->numero_reporte * 2);
+        }
+
+        // Obtener actividades aprobadas del periodo (individuales del alumno + grupales del servicio)
+        $actividades = Actividad::where('estado', 'Aprobada')
+            ->where(function ($q) use ($inscripcion) {
+                $q->where('id_alumno_servicio', $inscripcion->id)
+                  ->orWhere(function ($q2) use ($inscripcion) {
+                      $q2->where('id_servicio', $inscripcion->id_servicio)
+                         ->whereNull('id_alumno_servicio');
+                  });
+            })
+            ->whereBetween('fecha_limite', [$periodoInicio, $periodoFin])
+            ->orderBy('fecha_limite', 'asc')
+            ->get();
+
+        // Generar mensaje pre-llenado solo si no tiene contenido previo
+        $mensajePrellenado = null;
+        if (empty($reporte->contenido)) {
+            $inicioTexto = $periodoInicio->locale('es')->translatedFormat('d \\d\\e F \\d\\e Y');
+            $finTexto = $periodoFin->locale('es')->translatedFormat('d \\d\\e F \\d\\e Y');
+
+            if ($actividades->isNotEmpty()) {
+                $listaActividades = $actividades->pluck('actividad')->implode(', ');
+                $mensajePrellenado = "Durante el periodo del {$inicioTexto} al {$finTexto}, se realizaron las siguientes actividades: {$listaActividades}. "
+                    . "Estas actividades contribuyeron al cumplimiento de los objetivos del programa de servicio social.";
+            } else {
+                $mensajePrellenado = "Durante el periodo del {$inicioTexto} al {$finTexto}, se llevaron a cabo diversas actividades en el marco del programa de servicio social.";
+            }
+        }
+
         return view('alumno.reportes.escribir', [
             'reporte' => $reporte,
             'user' => $user,
+            'actividades' => $actividades,
+            'periodoInicio' => $periodoInicio,
+            'periodoFin' => $periodoFin,
+            'mensajePrellenado' => $mensajePrellenado,
         ]);
     }
 

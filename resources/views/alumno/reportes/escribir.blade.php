@@ -29,7 +29,9 @@
             <p style="margin: 0.5rem 0 0;">
                 Este es tu reporte final. Debes escribir un resumen general de toda tu experiencia durante el servicio social:
                 actividades realizadas, habilidades adquiridas, dificultades encontradas y conclusiones.
-                Este reporte cubre los 6 meses completos de tu servicio.
+            </p>
+            <p style="margin: 0.5rem 0 0;">
+                <strong>Periodo:</strong> del {{ $periodoInicio->locale('es')->translatedFormat('d \\d\\e F \\d\\e Y') }} al {{ $periodoFin->locale('es')->translatedFormat('d \\d\\e F \\d\\e Y') }}
             </p>
         </div>
     @else
@@ -38,6 +40,25 @@
             <p style="margin: 0.5rem 0 0;">
                 Describe las actividades que realizaste durante este periodo bimestral.
             </p>
+            <p style="margin: 0.5rem 0 0;">
+                <strong>Periodo:</strong> del {{ $periodoInicio->locale('es')->translatedFormat('d \\d\\e F \\d\\e Y') }} al {{ $periodoFin->locale('es')->translatedFormat('d \\d\\e F \\d\\e Y') }}
+            </p>
+        </div>
+    @endif
+
+    @if($actividades->isNotEmpty())
+        <div style="background-color: #f0fdf4; border: 1px solid #22c55e; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1.5rem;">
+            <strong>Actividades aprobadas en este periodo ({{ $actividades->count() }})</strong>
+            <ul style="margin: 0.5rem 0 0; padding-left: 1.25rem;">
+                @foreach($actividades as $act)
+                    <li>{{ $act->actividad }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @else
+        <div style="background-color: #fefce8; border: 1px solid #eab308; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1.5rem;">
+            <strong>No se encontraron actividades aprobadas en este periodo.</strong>
+            <p style="margin: 0.5rem 0 0;">Puedes redactar tu reporte manualmente describiendo las actividades que realizaste.</p>
         </div>
     @endif
 
@@ -52,7 +73,7 @@
             style="max-width: 100%; min-height: 300px;"
             placeholder="Escribe aquí el contenido de tu reporte..."
             required
-        >{{ old('contenido', $reporte->contenido) }}</textarea>
+        >{{ old('contenido', $reporte->contenido ?? $mensajePrellenado) }}</textarea>
 
         <div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
             <button type="submit" class="btn" onclick="return confirm('¿Estás seguro de enviar tu reporte? Una vez enviado, tu profesor lo revisará.')">
